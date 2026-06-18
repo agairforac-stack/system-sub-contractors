@@ -1,0 +1,2711 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SYSTEM SUB-CONTRACTORS V6.6</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--main:#0f172a;--blue:#0a6cff;--green:#198754;--red:#dc3545;--orange:#f59e0b;--bg:#eef2f7}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Tahoma,sans-serif;background:var(--bg);color:#1f2937}
+.hidden{display:none!important}
+.login-wrap{height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#fff;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.12);padding:22px;margin-bottom:18px}
+.login-card{width:390px;text-align:center}
+h1,h2,h3{margin-top:0;color:#0f172a}
+input,select,button,textarea{padding:10px;border-radius:8px;border:1px solid #cbd5e1;font-size:14px}
+input,select,textarea{width:100%;background:#fff}
+textarea{min-height:70px;resize:vertical}
+button{border:none;background:var(--blue);color:white;font-weight:bold;cursor:pointer}
+button:hover{filter:brightness(.95)}
+button.green{background:var(--green)}
+button.red{background:var(--red)}
+button.orange{background:var(--orange)}
+button.gray{background:#475569}
+button.small{padding:6px 10px;font-size:12px}
+.link{color:#0a6cff;cursor:pointer;margin-top:12px;font-weight:bold}
+.msg{font-weight:bold;margin-top:12px}
+.app{display:none}
+.sidebar{width:265px;background:#0f172a;color:white;position:fixed;right:0;top:0;bottom:0;padding:18px;overflow:auto}
+.sidebar h2{color:white;text-align:center;font-size:20px}
+.sidebar button{width:100%;margin:6px 0;background:#1e293b;text-align:right}
+.main{margin-right:285px;padding:22px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.field label{display:block;font-weight:bold;font-size:13px;margin-bottom:5px;color:#0f172a}
+.table-wrap{overflow:auto;max-height:62vh;border:1px solid #e5e7eb;border-radius:12px;background:#fff}
+.table{width:100%;border-collapse:collapse;background:white;min-width:900px}
+.table th,.table td{border:1px solid #e5e7eb;padding:8px;text-align:center;vertical-align:middle}
+.table th{background:#f8fafc;position:sticky;top:0;z-index:3}
+.table input,.table select,.table textarea{padding:6px;font-size:12px}
+.badge{padding:4px 10px;border-radius:999px;font-weight:bold;font-size:12px;display:inline-block}
+.draft{background:#fff3cd;color:#856404}
+.approved{background:#d1e7dd;color:#0f5132}
+.pending{background:#fff3cd;color:#856404}
+.rejected{background:#fde2e2;color:#b42318}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.summary .box{background:white;border-radius:14px;padding:18px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.summary .box h2{margin:5px 0 0}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:999}
+.modal{background:#fff;width:96%;max-width:1200px;max-height:92vh;overflow:auto;border-radius:14px;padding:18px}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.a4{background:#fff;color:#111;border:1px solid #dbe3ef;border-radius:12px;padding:18px;margin:12px auto;max-width:980px}
+.doc-title{text-align:center;background:#07306f;color:white;border-radius:8px;padding:10px;font-weight:bold;font-size:20px}
+.letter-text{line-height:2;font-size:16px;margin:15px 0;text-align:right}
+.total-line{font-size:18px;font-weight:bold;text-align:left;margin-top:10px}
+.no-print{}
+@media(max-width:900px){
+.sidebar{position:static;width:auto}
+.main{margin:0}
+.grid,.grid2,.summary{grid-template-columns:1fr}
+}
+@media print{
+body *{visibility:hidden!important}
+.print-area,.print-area *{visibility:visible!important}
+.print-area{position:absolute;inset:0;background:#fff;padding:10mm}
+.no-print,.sidebar,button{display:none!important}
+.main{margin:0!important;padding:0!important}
+@page{size:A4 portrait;margin:10mm}
+}
+
+/* ===== V2 Order Print / A4 Professional Layout ===== */
+#orderPrintArea{
+  width:190mm;
+  max-width:190mm;
+  min-height:277mm;
+  padding:10mm;
+  margin:0 auto;
+  border:1px solid #dbe3ef;
+  border-radius:10px;
+  box-shadow:none;
+}
+
+#orderPrintArea .doc-title{
+  margin-bottom:8px;
+}
+
+#orderPrintArea .grid{
+  grid-template-columns:45mm 45mm 1fr;
+  gap:7px;
+}
+
+#orderPrintArea .field label{
+  font-size:11px;
+  margin-bottom:3px;
+}
+
+#orderPrintArea input,
+#orderPrintArea select,
+#orderPrintArea textarea{
+  font-size:11px;
+  padding:5px;
+}
+
+#orderPrintArea .letter-text{
+  font-size:13px;
+  line-height:1.8;
+  margin:10px 0;
+}
+
+.order-table{
+  width:100% !important;
+  min-width:auto !important;
+  table-layout:fixed;
+  font-size:11px;
+}
+
+.order-table th,
+.order-table td{
+  padding:4px !important;
+  text-align:center;
+  vertical-align:middle;
+  word-wrap:break-word;
+}
+
+.order-table th:nth-child(1),
+.order-table td:nth-child(1){
+  width:11mm;
+}
+
+.order-table th:nth-child(2),
+.order-table td:nth-child(2){
+  width:auto;
+  text-align:right;
+}
+
+.order-table th:nth-child(3),
+.order-table td:nth-child(3){
+  width:18mm;
+}
+
+.order-table th:nth-child(4),
+.order-table td:nth-child(4){
+  width:18mm;
+}
+
+.order-table th:nth-child(5),
+.order-table td:nth-child(5){
+  width:27mm;
+}
+
+.order-table th:nth-child(6),
+.order-table td:nth-child(6){
+  width:27mm;
+}
+
+.order-table th:nth-child(7),
+.order-table td:nth-child(7){
+  width:14mm;
+}
+
+.order-table .ordDesc{
+  min-height:17mm;
+  height:17mm;
+  font-weight:bold;
+  text-align:right;
+  line-height:1.35;
+}
+
+.order-table .ordUnit,
+.order-table .ordQty,
+.order-table .ordPrice{
+  text-align:center;
+}
+
+#orderTotal{
+  font-size:15px;
+  font-weight:bold;
+}
+
+@media print{
+  @page{
+    size:A4 portrait;
+    margin:10mm;
+  }
+
+  body{
+    background:white!important;
+  }
+
+  body *{
+    visibility:hidden!important;
+  }
+
+  #orderPrintArea,
+  #orderPrintArea *{
+    visibility:visible!important;
+  }
+
+  #orderPrintArea{
+    position:absolute!important;
+    top:0!important;
+    right:0!important;
+    left:0!important;
+    width:190mm!important;
+    max-width:190mm!important;
+    min-height:auto!important;
+    margin:0 auto!important;
+    padding:0!important;
+    border:none!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    background:white!important;
+  }
+
+  #orderPrintArea .table-wrap{
+    overflow:visible!important;
+    max-height:none!important;
+    border:none!important;
+  }
+
+  .order-table{
+    width:100%!important;
+    min-width:auto!important;
+    table-layout:fixed!important;
+    page-break-inside:auto!important;
+    font-size:10.5px!important;
+  }
+
+  .order-table tr{
+    page-break-inside:avoid!important;
+  }
+
+  .order-table th,
+  .order-table td{
+    padding:3px!important;
+  }
+
+  #orderPrintArea input,
+  #orderPrintArea select,
+  #orderPrintArea textarea{
+    border:none!important;
+    outline:none!important;
+    box-shadow:none!important;
+    background:transparent!important;
+    resize:none!important;
+    overflow:hidden!important;
+    appearance:none!important;
+  }
+
+  #orderPrintArea .no-print,
+  #orderPrintArea .no-print *{
+    display:none!important;
+    visibility:hidden!important;
+  }
+
+  .sidebar,
+  .main > .card:not(#ordersPage),
+  #orderModal > .modal > .modal-header,
+  #orderModal > .modal > .toolbar{
+    display:none!important;
+  }
+}
+
+
+/* ===== V3 Modern Navy AG AIR Layout ===== */
+body{background:#f3f7fb;color:#071b3a}
+.app{background:#f3f7fb;min-height:100vh}
+.sidebar{
+  width:255px;
+  background:linear-gradient(180deg,#071b3a,#062b57 55%,#061a33);
+  color:white;
+  right:0;
+  padding:22px 18px;
+  box-shadow:-8px 0 22px rgba(7,27,58,.18);
+}
+.sidebar h2{font-size:22px;line-height:1.25;margin-bottom:14px}
+.sidebar small{color:#22c55e;font-size:18px}
+.sidebar p{color:#d8e8ff;text-align:center}
+.sidebar button{
+  border:1px solid rgba(255,255,255,.22);
+  background:rgba(255,255,255,.045);
+  color:white;
+  text-align:right;
+  border-radius:10px;
+  padding:12px 14px;
+  margin:7px 0;
+}
+.sidebar button:hover{background:rgba(255,255,255,.12)}
+.topbar{
+  position:fixed;
+  right:255px;
+  left:0;
+  top:0;
+  height:68px;
+  background:linear-gradient(90deg,#071b3a,#092b58);
+  color:white;
+  z-index:50;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 24px;
+  box-shadow:0 2px 12px rgba(7,27,58,.25);
+}
+.brand{direction:ltr;font-size:30px;font-weight:900;line-height:.9}
+.brand .ag{color:#ef233c}
+.brand span:not(.ag){color:white}
+.brand small{display:block;font-size:12px;font-weight:bold;margin-top:5px;color:#fff}
+.hamb{font-size:28px}
+.main{margin-right:255px;padding:88px 18px 58px}
+.card,.modal{
+  border:1px solid #dbe7f3;
+  border-radius:14px;
+  box-shadow:0 8px 25px rgba(7,27,58,.08);
+}
+.footerbar{
+  position:fixed;
+  right:255px;
+  left:0;
+  bottom:0;
+  height:34px;
+  background:linear-gradient(90deg,#071b3a,#092b58);
+  color:white;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 24px;
+  font-size:12px;
+  z-index:55;
+}
+#systemClock{color:#22c55e}
+#orderModal .modal{max-width:1220px;width:96%;padding:0;background:#fff}
+#orderModal .modal-header{padding:12px 18px;border-bottom:1px solid #e5edf7}
+#orderPrintArea{
+  width:100%!important;
+  max-width:100%!important;
+  min-height:auto;
+  padding:18px 22px;
+  border:none;
+  border-radius:0;
+  box-shadow:none;
+}
+#orderPrintArea .doc-title{
+  background:linear-gradient(90deg,#061a33,#0b3973);
+  border-radius:8px;
+  padding:11px;
+  font-size:22px;
+  letter-spacing:.2px;
+}
+#orderPrintArea .grid{
+  grid-template-columns:repeat(3,1fr)!important;
+  gap:12px 18px!important;
+  margin-top:12px;
+}
+#orderPrintArea .field label{font-size:13px;color:#071b3a;font-weight:800}
+#orderPrintArea input,#orderPrintArea select{
+  height:40px;
+  border:1px solid #cdd9e6;
+  border-radius:8px;
+  text-align:center;
+  color:#071b3a;
+}
+.order-table{
+  border-radius:8px;
+  overflow:hidden;
+  font-size:13px;
+}
+.order-table th{
+  background:linear-gradient(90deg,#061a33,#0b3973)!important;
+  color:white;
+  padding:11px 5px!important;
+}
+.order-table td{height:50px;background:white}
+.order-table .ordDesc{
+  height:42px;
+  min-height:42px;
+  font-size:13px;
+  border:0;
+}
+.order-table th:nth-child(1),.order-table td:nth-child(1){width:48px}
+.order-table th:nth-child(2),.order-table td:nth-child(2){width:auto}
+.order-table th:nth-child(3),.order-table td:nth-child(3){width:92px}
+.order-table th:nth-child(4),.order-table td:nth-child(4){width:88px}
+.order-table th:nth-child(5),.order-table td:nth-child(5){width:125px}
+.order-table th:nth-child(6),.order-table td:nth-child(6){width:125px}
+.order-table th:nth-child(7),.order-table td:nth-child(7){width:76px}
+.total-line{
+  font-size:17px;
+  text-align:right;
+  margin:16px 8px 12px;
+}
+.total-line span{font-size:22px;color:#07306f}
+.order-closing{
+  border:1px solid #dbe7f3;
+  border-radius:12px;
+  padding:14px;
+  margin-top:10px;
+  box-shadow:0 6px 20px rgba(7,27,58,.06);
+}
+.closing-text{
+  text-align:center;
+  font-weight:900;
+  font-size:17px;
+  line-height:1.8;
+  color:#071b3a;
+}
+.closing-text span{color:#0b3973;font-size:18px}
+.sign-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:30px;
+  align-items:start;
+  margin-top:22px;
+}
+.sign-box{text-align:center;min-height:112px}
+.sign-box h3{font-size:16px;margin-bottom:26px}
+.sign-line{font-weight:bold;letter-spacing:2px}
+.approval-box{border-right:1px solid #dbe7f3}
+#adminApprovalPassword{
+  width:290px;
+  max-width:95%;
+  margin:0 auto 10px;
+  display:block;
+  text-align:center;
+}
+.approval-box button{width:210px;background:linear-gradient(90deg,#0b9b55,#058547)}
+.approval-note{color:#dc2626;font-weight:bold;font-size:13px;margin-top:10px}
+#approvedStamp h2{color:#059669;font-size:24px}
+button.blue{background:#0b3973}
+button.green{background:linear-gradient(90deg,#0b9b55,#058547)}
+button.orange{background:linear-gradient(90deg,#f59e0b,#f97316)}
+button.gray{background:#4b5563}
+button.red{background:#dc2626}
+@media(max-width:900px){
+ .topbar,.footerbar{right:0}
+ .main{margin-right:0;padding-top:90px}
+ .sidebar{width:auto}
+}
+@media print{
+  .topbar,.footerbar{display:none!important}
+  #orderPrintArea{padding:0!important;width:190mm!important;max-width:190mm!important}
+  #orderPrintArea .grid{grid-template-columns:repeat(3,1fr)!important}
+  .order-closing{box-shadow:none!important}
+}
+
+
+/* ===== V4 click/modal fix ===== */
+.modal-bg{
+  z-index:9999!important;
+}
+#openOrderBtn{
+  position:relative;
+  z-index:20;
+  pointer-events:auto!important;
+}
+
+
+/* ================= V5 Extract Professional Landscape Layout ================= */
+#extractModal .modal{
+  max-width:1360px!important;
+  width:98%!important;
+  padding:0!important;
+}
+#extractModal .modal-header{
+  padding:10px 18px;
+  border-bottom:1px solid #dbe7f3;
+}
+#extractPrintArea{
+  width:100%!important;
+  max-width:100%!important;
+  border:none!important;
+  box-shadow:none!important;
+  border-radius:0!important;
+  padding:12px 16px!important;
+  margin:0!important;
+}
+.extract-top-fields{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:10px;
+  margin:8px 0 10px;
+}
+.extract-top-fields .field label{
+  font-size:12px;
+  font-weight:900;
+  color:#071b3a;
+}
+.extract-top-fields input,
+.extract-top-fields select{
+  height:38px;
+  text-align:center;
+  font-size:13px;
+}
+.extract-doc{
+  border:1.5px solid #071b3a;
+  background:white;
+  padding:10px 14px;
+}
+.extract-header{
+  display:grid;
+  grid-template-columns:1.1fr 1.2fr 1.1fr;
+  align-items:start;
+  gap:10px;
+  min-height:115px;
+}
+.extract-side-info{
+  font-family:"Courier New", monospace;
+  font-weight:bold;
+  font-size:13px;
+  line-height:1.65;
+  white-space:pre-line;
+}
+.extract-brand-center{
+  text-align:center;
+}
+.extract-logo{
+  direction:ltr;
+  font-size:48px;
+  line-height:.95;
+  font-weight:900;
+  margin-top:6px;
+}
+.extract-logo .ag{color:#e11d2e}
+.extract-logo .air{color:#071b3a}
+.extract-sub-logo{
+  direction:ltr;
+  font-weight:bold;
+  font-size:15px;
+  color:#071b3a;
+}
+.extract-ag-info{
+  text-align:right;
+  font-weight:bold;
+  font-size:14px;
+  line-height:1.75;
+}
+.extract-title-lines{
+  text-align:center;
+  font-family:"Courier New", monospace;
+  font-size:14px;
+  line-height:1.8;
+  margin:4px 0 10px;
+}
+.extract-prof-table{
+  width:100%!important;
+  min-width:auto!important;
+  border-collapse:collapse;
+  table-layout:fixed;
+  font-family:"Courier New", monospace;
+  font-size:12px;
+}
+.extract-prof-table th,
+.extract-prof-table td{
+  border:1px solid #111!important;
+  padding:4px 3px!important;
+  text-align:center;
+  vertical-align:middle;
+  background:white!important;
+  color:#000!important;
+  height:34px;
+}
+.extract-prof-table th{
+  font-weight:bold;
+}
+.extract-prof-table .work-desc{
+  text-align:right;
+  font-family:Arial,Tahoma,sans-serif;
+  font-size:12px;
+  line-height:1.25;
+  word-break:break-word;
+}
+.extract-prof-table input{
+  height:26px;
+  padding:3px!important;
+  border:1px solid #bfd0e3!important;
+  border-radius:5px!important;
+  text-align:center;
+  font-family:"Courier New", monospace;
+  font-size:12px;
+  background:#fff!important;
+}
+.extract-prof-table input[readonly]{
+  border:none!important;
+  background:transparent!important;
+}
+.extract-prof-table th:nth-child(1), .extract-prof-table td:nth-child(1){width:34px}
+.extract-prof-table th:nth-child(2), .extract-prof-table td:nth-child(2){width:190px}
+.extract-prof-table th:nth-child(3), .extract-prof-table td:nth-child(3){width:65px}
+.extract-prof-table th:nth-child(4), .extract-prof-table td:nth-child(4){width:62px}
+.extract-prof-table th:nth-child(5), .extract-prof-table td:nth-child(5){width:70px}
+.extract-prof-table th:nth-child(6), .extract-prof-table td:nth-child(6){width:72px}
+.extract-prof-table th:nth-child(7), .extract-prof-table td:nth-child(7){width:72px}
+.extract-prof-table th:nth-child(8), .extract-prof-table td:nth-child(8){width:72px}
+.extract-prof-table th:nth-child(9), .extract-prof-table td:nth-child(9){width:72px}
+.extract-prof-table th:nth-child(10), .extract-prof-table td:nth-child(10){width:82px}
+.extract-prof-table th:nth-child(11), .extract-prof-table td:nth-child(11){width:82px}
+.extract-prof-table th:nth-child(12), .extract-prof-table td:nth-child(12){width:82px}
+.extract-prof-table th:nth-child(13), .extract-prof-table td:nth-child(13){width:88px}
+.extract-prof-table th:nth-child(14), .extract-prof-table td:nth-child(14){width:70px}
+.extract-total-row td{
+  height:42px!important;
+  font-weight:bold;
+}
+.extract-net-row td{
+  height:44px!important;
+}
+.extract-approvals{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:12px;
+}
+.extract-approval-card{
+  border:1px dashed #b7c6d8;
+  border-radius:10px;
+  padding:12px;
+  text-align:center;
+  min-height:130px;
+}
+.extract-approval-card h3{
+  margin:0 0 8px;
+  font-size:16px;
+}
+.extract-approval-card input{
+  width:260px;
+  max-width:95%;
+  text-align:center;
+  height:36px;
+  margin-bottom:8px;
+}
+.extract-approval-card button{
+  width:150px;
+}
+.approval-status{
+  margin-top:8px;
+  font-weight:bold;
+}
+.approval-status.waiting{color:#dc2626}
+.approval-status.done{color:#059669}
+.approval-check{
+  color:#059669;
+  font-size:24px;
+  font-weight:900;
+}
+.extract-actions{
+  justify-content:center!important;
+  padding:10px!important;
+}
+.extract-actions button{
+  min-width:105px;
+}
+.extract-readonly-lock .extCurrentQty{
+  pointer-events:none!important;
+  border:none!important;
+  background:transparent!important;
+}
+.extract-readonly-lock input,
+.extract-readonly-lock select{
+  pointer-events:none!important;
+}
+@media print{
+  @page{size:A4 landscape;margin:7mm}
+  body *{visibility:hidden!important}
+  #extractPrintArea,#extractPrintArea *{visibility:visible!important}
+  #extractPrintArea{
+    position:absolute!important;
+    inset:0!important;
+    width:283mm!important;
+    max-width:283mm!important;
+    padding:0!important;
+    margin:0!important;
+    background:white!important;
+  }
+  #extractPrintArea input,
+  #extractPrintArea select{
+    border:none!important;
+    appearance:none!important;
+    outline:none!important;
+    box-shadow:none!important;
+    background:transparent!important;
+  }
+  #extractModal .modal-header,
+  #extractModal .extract-actions,
+  .sidebar,.topbar,.footerbar,.no-print{
+    display:none!important;
+  }
+  .extract-doc{border:1.5px solid #111!important;padding:5mm!important}
+  .extract-top-fields{display:none!important}
+  .extract-prof-table{font-size:10px!important}
+  .extract-prof-table th,.extract-prof-table td{padding:2px!important;height:25px!important}
+  .extract-logo{font-size:40px!important}
+  .extract-header{min-height:95px!important}
+  .extract-approvals{margin-top:8px!important}
+  .extract-approval-card input,.extract-approval-card button,.approval-status.waiting{display:none!important}
+}
+
+
+/* ===== V5.2 Extract auto-pull note and readonly styling ===== */
+.extract-current-note{
+  background:#eef6ff;
+  border:1px dashed #93b4d8;
+  color:#07306f;
+  border-radius:8px;
+  padding:8px 12px;
+  margin:6px 0 10px;
+  text-align:center;
+  font-weight:bold;
+}
+.extract-prof-table td:not(:has(input)){
+  background:#fff!important;
+}
+.extract-prof-table .extCurrentQty{
+  border:2px solid #0b9b55!important;
+  background:#f8fff9!important;
+  font-weight:bold;
+}
+@media print{
+  .extract-current-note{display:none!important}
+}
+
+
+/* ===== V5.3 Force order number in green box ===== */
+#extractHeaderOrderNo{
+  display:inline-block;
+  min-width:170px;
+  min-height:24px;
+  line-height:24px;
+  border:3px solid #22c55e;
+  color:#071b3a;
+  font-weight:900;
+  background:#f8fff9;
+  padding:0 10px;
+  margin:3px 0;
+  text-align:center;
+}
+@media print{
+  #extractHeaderOrderNo{
+    border:2px solid #111!important;
+    background:white!important;
+    color:#000!important;
+  }
+}
+
+
+/* ===== V5.5 wider extract number cells + forced order number box ===== */
+#extractHeaderOrderNo{
+  display:inline-block;
+  min-width:185px;
+  min-height:26px;
+  line-height:26px;
+  border:3px solid #22c55e;
+  color:#071b3a;
+  font-weight:900;
+  background:#f8fff9;
+  padding:0 12px;
+  margin:3px 0;
+  text-align:center;
+  font-family:Arial,Tahoma,sans-serif;
+}
+.extract-prof-table th:nth-child(5), .extract-prof-table td:nth-child(5),
+.extract-prof-table th:nth-child(6), .extract-prof-table td:nth-child(6),
+.extract-prof-table th:nth-child(7), .extract-prof-table td:nth-child(7){
+  width:88px!important;
+}
+.extract-prof-table th:nth-child(9), .extract-prof-table td:nth-child(9),
+.extract-prof-table th:nth-child(10), .extract-prof-table td:nth-child(10),
+.extract-prof-table th:nth-child(11), .extract-prof-table td:nth-child(11){
+  width:98px!important;
+}
+.extract-prof-table td{
+  font-size:12.5px!important;
+  font-weight:700;
+}
+.extract-prof-table .extCurrentQty{
+  width:66px!important;
+  min-width:66px!important;
+  height:30px!important;
+  font-size:14px!important;
+  font-weight:900!important;
+  text-align:center!important;
+  padding:2px!important;
+}
+@media print{
+  #extractHeaderOrderNo{
+    border:2px solid #111!important;
+    background:white!important;
+    color:#000!important;
+  }
+  .extract-prof-table th:nth-child(5), .extract-prof-table td:nth-child(5),
+  .extract-prof-table th:nth-child(6), .extract-prof-table td:nth-child(6),
+  .extract-prof-table th:nth-child(7), .extract-prof-table td:nth-child(7){
+    width:82px!important;
+  }
+  .extract-prof-table th:nth-child(9), .extract-prof-table td:nth-child(9),
+  .extract-prof-table th:nth-child(10), .extract-prof-table td:nth-child(10),
+  .extract-prof-table th:nth-child(11), .extract-prof-table td:nth-child(11){
+    width:92px!important;
+  }
+}
+
+
+/* ===== V5.7 Print-visible order number in the green box ===== */
+#extractHeaderOrderNo.extract-order-no-value{
+  display:inline-block!important;
+  min-width:210px!important;
+  min-height:30px!important;
+  line-height:30px!important;
+  border:3px solid #22c55e!important;
+  color:#071b3a!important;
+  font-weight:900!important;
+  background:#f8fff9!important;
+  padding:0 14px!important;
+  margin:4px 0!important;
+  text-align:center!important;
+  font-family:Arial,Tahoma,sans-serif!important;
+  font-size:15px!important;
+}
+@media print{
+  #extractHeaderOrderNo.extract-order-no-value{
+    border:2px solid #111!important;
+    color:#000!important;
+    background:white!important;
+    min-width:190px!important;
+    min-height:24px!important;
+    line-height:24px!important;
+    font-size:12px!important;
+  }
+}
+
+
+/* ===== V6.2 Extract attachments ===== */
+.extract-attachments{
+  margin:10px 18px 0;
+  border:1px dashed #9db7d4;
+  border-radius:12px;
+  background:#f8fbff;
+  padding:12px;
+}
+.extract-attachments h3{
+  margin:0 0 4px;
+  color:#07306f;
+  font-size:16px;
+}
+.extract-attachments p{
+  margin:0 0 8px;
+  font-weight:bold;
+  color:#475569;
+}
+.attachments-list{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.attach-item{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  border:1px solid #cbd5e1;
+  background:white;
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:12px;
+  font-weight:bold;
+}
+.attach-item a{
+  color:#07306f;
+  text-decoration:none;
+}
+.attach-item button{
+  padding:4px 8px!important;
+  font-size:11px!important;
+}
+@media print{
+  .extract-attachments{display:none!important}
+}
+
+
+/* ===== V6.3 Dedicated statement print fix ===== */
+@media print{
+  body.printing-statement *{
+    visibility:hidden!important;
+  }
+  body.printing-statement #statementArea,
+  body.printing-statement #statementArea *{
+    visibility:visible!important;
+  }
+  body.printing-statement #statementArea{
+    position:absolute!important;
+    top:0!important;
+    right:0!important;
+    left:0!important;
+    width:100%!important;
+    background:white!important;
+    padding:8mm!important;
+  }
+  body.printing-statement #statementArea .a4{
+    max-width:none!important;
+    width:100%!important;
+    margin:0!important;
+    border:none!important;
+    box-shadow:none!important;
+    border-radius:0!important;
+  }
+  body.printing-statement .sidebar,
+  body.printing-statement .topbar,
+  body.printing-statement .footerbar,
+  body.printing-statement .no-print,
+  body.printing-statement button{
+    display:none!important;
+  }
+
+  body.printing-extract *{
+    visibility:hidden!important;
+  }
+  body.printing-extract #extractPrintArea,
+  body.printing-extract #extractPrintArea *{
+    visibility:visible!important;
+  }
+  body.printing-extract #extractPrintArea{
+    position:absolute!important;
+    inset:0!important;
+    width:283mm!important;
+    max-width:283mm!important;
+    padding:0!important;
+    margin:0!important;
+    background:white!important;
+  }
+}
+
+@media print{ @page{ margin:10mm; } }
+
+
+/* ===== V6.4 Extract table width tuning ===== */
+.extract-prof-table{
+  table-layout:fixed!important;
+}
+.extract-prof-table th,
+.extract-prof-table td{
+  font-size:11.5px!important;
+  padding:3px 2px!important;
+}
+
+/* م، نوع العمل */
+.extract-prof-table th:nth-child(1), .extract-prof-table td:nth-child(1){width:32px!important;}
+.extract-prof-table th:nth-child(2), .extract-prof-table td:nth-child(2){width:auto!important;}
+
+/* كمية P.O + الوحدة + الفئة أصغر شوية */
+.extract-prof-table th:nth-child(3), .extract-prof-table td:nth-child(3){width:58px!important;}
+.extract-prof-table th:nth-child(4), .extract-prof-table td:nth-child(4){width:58px!important;}
+.extract-prof-table th:nth-child(8), .extract-prof-table td:nth-child(8){width:68px!important;}
+
+/* الكميات المنفذة */
+.extract-prof-table th:nth-child(5), .extract-prof-table td:nth-child(5),
+.extract-prof-table th:nth-child(6), .extract-prof-table td:nth-child(6),
+.extract-prof-table th:nth-child(7), .extract-prof-table td:nth-child(7){
+  width:70px!important;
+}
+
+/* القيم: السابق / الحالي / الإجمالي أعرض */
+.extract-prof-table th:nth-child(9), .extract-prof-table td:nth-child(9),
+.extract-prof-table th:nth-child(10), .extract-prof-table td:nth-child(10),
+.extract-prof-table th:nth-child(11), .extract-prof-table td:nth-child(11){
+  width:105px!important;
+  font-size:12px!important;
+  font-weight:800!important;
+}
+
+/* الملاحظات */
+.extract-prof-table th:nth-child(12), .extract-prof-table td:nth-child(12){width:60px!important;}
+
+.extract-prof-table .extCurrentQty{
+  width:62px!important;
+  min-width:62px!important;
+  height:28px!important;
+  font-size:13px!important;
+  font-weight:900!important;
+  text-align:center!important;
+  padding:1px!important;
+}
+
+@media print{
+  .extract-prof-table th,
+  .extract-prof-table td{
+    font-size:9.5px!important;
+    padding:2px 1px!important;
+  }
+  .extract-prof-table th:nth-child(3), .extract-prof-table td:nth-child(3){width:52px!important;}
+  .extract-prof-table th:nth-child(4), .extract-prof-table td:nth-child(4){width:52px!important;}
+  .extract-prof-table th:nth-child(8), .extract-prof-table td:nth-child(8){width:62px!important;}
+  .extract-prof-table th:nth-child(9), .extract-prof-table td:nth-child(9),
+  .extract-prof-table th:nth-child(10), .extract-prof-table td:nth-child(10),
+  .extract-prof-table th:nth-child(11), .extract-prof-table td:nth-child(11){
+    width:96px!important;
+    font-size:10px!important;
+  }
+}
+
+
+/* ===== V6.5 Extract table balanced widths fix ===== */
+.extract-doc{
+  padding:8px 10px!important;
+}
+.extract-prof-table{
+  table-layout:fixed!important;
+  width:100%!important;
+  font-size:10.8px!important;
+}
+.extract-prof-table th,
+.extract-prof-table td{
+  padding:3px 2px!important;
+  height:30px!important;
+  font-size:10.8px!important;
+  line-height:1.15!important;
+  overflow:hidden!important;
+  white-space:normal!important;
+}
+
+/* م */
+.extract-prof-table th:nth-child(1),
+.extract-prof-table td:nth-child(1){
+  width:30px!important;
+}
+
+/* نوع العمل - نصغرها بسيطاً لإعطاء مساحة للأرقام */
+.extract-prof-table th:nth-child(2),
+.extract-prof-table td:nth-child(2){
+  width:260px!important;
+}
+
+/* كمية P.O */
+.extract-prof-table th:nth-child(3),
+.extract-prof-table td:nth-child(3){
+  width:62px!important;
+}
+
+/* الوحدة */
+.extract-prof-table th:nth-child(4),
+.extract-prof-table td:nth-child(4){
+  width:60px!important;
+}
+
+/* الكميات المنفذة: السابق / الحالي / الإجمالي */
+.extract-prof-table th:nth-child(5),
+.extract-prof-table td:nth-child(5),
+.extract-prof-table th:nth-child(6),
+.extract-prof-table td:nth-child(6),
+.extract-prof-table th:nth-child(7),
+.extract-prof-table td:nth-child(7){
+  width:76px!important;
+  font-size:11px!important;
+  font-weight:800!important;
+}
+
+/* الفئة */
+.extract-prof-table th:nth-child(8),
+.extract-prof-table td:nth-child(8){
+  width:78px!important;
+  font-size:11px!important;
+  font-weight:800!important;
+}
+
+/* القيمة الإجمالية EGP: السابق / الحالي / الإجمالي */
+.extract-prof-table th:nth-child(9),
+.extract-prof-table td:nth-child(9),
+.extract-prof-table th:nth-child(10),
+.extract-prof-table td:nth-child(10),
+.extract-prof-table th:nth-child(11),
+.extract-prof-table td:nth-child(11){
+  width:92px!important;
+  font-size:11px!important;
+  font-weight:900!important;
+}
+
+/* ملاحظات */
+.extract-prof-table th:nth-child(12),
+.extract-prof-table td:nth-child(12){
+  width:62px!important;
+}
+
+.extract-prof-table .work-desc{
+  font-size:10.8px!important;
+  line-height:1.2!important;
+}
+
+/* خانة الحالي */
+.extract-prof-table .extCurrentQty{
+  width:66px!important;
+  min-width:66px!important;
+  max-width:66px!important;
+  height:26px!important;
+  font-size:12.5px!important;
+  font-weight:900!important;
+  text-align:center!important;
+  padding:1px!important;
+}
+
+/* الصفوف النهائية */
+.extract-total-row td,
+.extract-net-row td{
+  font-size:11px!important;
+  font-weight:900!important;
+  height:32px!important;
+}
+
+@media print{
+  .extract-doc{
+    padding:4mm!important;
+  }
+  .extract-prof-table{
+    font-size:9.2px!important;
+  }
+  .extract-prof-table th,
+  .extract-prof-table td{
+    font-size:9.2px!important;
+    padding:2px 1px!important;
+    height:24px!important;
+  }
+  .extract-prof-table th:nth-child(2),
+  .extract-prof-table td:nth-child(2){
+    width:245px!important;
+  }
+  .extract-prof-table th:nth-child(5),
+  .extract-prof-table td:nth-child(5),
+  .extract-prof-table th:nth-child(6),
+  .extract-prof-table td:nth-child(6),
+  .extract-prof-table th:nth-child(7),
+  .extract-prof-table td:nth-child(7){
+    width:70px!important;
+    font-size:9.5px!important;
+  }
+  .extract-prof-table th:nth-child(9),
+  .extract-prof-table td:nth-child(9),
+  .extract-prof-table th:nth-child(10),
+  .extract-prof-table td:nth-child(10),
+  .extract-prof-table th:nth-child(11),
+  .extract-prof-table td:nth-child(11){
+    width:86px!important;
+    font-size:9.5px!important;
+  }
+  .extract-prof-table .extCurrentQty{
+    width:58px!important;
+    min-width:58px!important;
+    max-width:58px!important;
+    height:22px!important;
+    font-size:10px!important;
+  }
+}
+
+
+/* ===== V6.6 Wider executed quantities and EGP amount columns ===== */
+.extract-prof-table{
+  table-layout:fixed!important;
+  width:100%!important;
+}
+
+/* تصغير بسيط لرؤوس الجدول حتى الخانات تكبر بدون لخبطة */
+.extract-prof-table th{
+  font-size:9.8px!important;
+  line-height:1.1!important;
+  padding:2px 1px!important;
+}
+.extract-prof-table td{
+  font-size:10.8px!important;
+  line-height:1.15!important;
+  padding:2px 1px!important;
+  height:30px!important;
+}
+
+/* نوع العمل يتصغر شوية لإعطاء مساحة للأرقام */
+.extract-prof-table th:nth-child(2),
+.extract-prof-table td:nth-child(2){
+  width:235px!important;
+}
+
+/* كمية P.O / الوحدة / الفئة */
+.extract-prof-table th:nth-child(3),
+.extract-prof-table td:nth-child(3){
+  width:58px!important;
+}
+.extract-prof-table th:nth-child(4),
+.extract-prof-table td:nth-child(4){
+  width:55px!important;
+}
+.extract-prof-table th:nth-child(8),
+.extract-prof-table td:nth-child(8){
+  width:70px!important;
+}
+
+/* الكميات المنفذة: السابق / الحالي / الإجمالي */
+.extract-prof-table th:nth-child(5),
+.extract-prof-table td:nth-child(5),
+.extract-prof-table th:nth-child(6),
+.extract-prof-table td:nth-child(6),
+.extract-prof-table th:nth-child(7),
+.extract-prof-table td:nth-child(7){
+  width:90px!important;
+  font-size:11px!important;
+  font-weight:800!important;
+}
+
+/* القيمة الإجمالية EGP: السابق / الحالي / الإجمالي */
+.extract-prof-table th:nth-child(9),
+.extract-prof-table td:nth-child(9),
+.extract-prof-table th:nth-child(10),
+.extract-prof-table td:nth-child(10),
+.extract-prof-table th:nth-child(11),
+.extract-prof-table td:nth-child(11){
+  width:120px!important;
+  font-size:11px!important;
+  font-weight:900!important;
+  white-space:nowrap!important;
+}
+
+/* ملاحظات أصغر شوية */
+.extract-prof-table th:nth-child(12),
+.extract-prof-table td:nth-child(12){
+  width:52px!important;
+}
+
+/* خانة الحالي */
+.extract-prof-table .extCurrentQty{
+  width:74px!important;
+  min-width:74px!important;
+  max-width:74px!important;
+  height:27px!important;
+  font-size:12.5px!important;
+  font-weight:900!important;
+  text-align:center!important;
+  padding:1px!important;
+}
+
+/* إجماليات أسفل الجدول */
+.extract-total-row td,
+.extract-net-row td{
+  font-size:11px!important;
+  font-weight:900!important;
+  white-space:nowrap!important;
+}
+
+@media print{
+  .extract-prof-table th{
+    font-size:8.5px!important;
+  }
+  .extract-prof-table td{
+    font-size:9px!important;
+    height:23px!important;
+  }
+  .extract-prof-table th:nth-child(2),
+  .extract-prof-table td:nth-child(2){
+    width:225px!important;
+  }
+  .extract-prof-table th:nth-child(5),
+  .extract-prof-table td:nth-child(5),
+  .extract-prof-table th:nth-child(6),
+  .extract-prof-table td:nth-child(6),
+  .extract-prof-table th:nth-child(7),
+  .extract-prof-table td:nth-child(7){
+    width:82px!important;
+  }
+  .extract-prof-table th:nth-child(9),
+  .extract-prof-table td:nth-child(9),
+  .extract-prof-table th:nth-child(10),
+  .extract-prof-table td:nth-child(10),
+  .extract-prof-table th:nth-child(11),
+  .extract-prof-table td:nth-child(11){
+    width:108px!important;
+    font-size:9px!important;
+  }
+  .extract-prof-table .extCurrentQty{
+    width:66px!important;
+    min-width:66px!important;
+    max-width:66px!important;
+    height:22px!important;
+    font-size:10px!important;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="loginPage" class="login-wrap">
+  <div class="card login-card">
+    <h1>SYSTEM<br>SUB-CONTRACTORS</h1>
+    <div id="loginBox">
+      <input id="loginUser" placeholder="User Name">
+      <br><br>
+      <input id="loginPass" type="password" placeholder="Password">
+      <br><br>
+      <button onclick="login()">Login</button>
+      <div class="link" onclick="showRegister()">تسجيل مستخدم جديد</div>
+    </div>
+    <div id="registerBox" class="hidden">
+      <input id="regUser" placeholder="User Name">
+      <br><br>
+      <input id="regPass" type="password" placeholder="Password">
+      <br><br>
+      <button class="green" onclick="registerUser()">Register</button>
+      <div class="link" onclick="showLogin()">Back to login</div>
+    </div>
+    <div id="loginMsg" class="msg"></div>
+  </div>
+</div>
+
+<div id="app" class="app">
+  <div class="sidebar">
+    <h2>SYSTEM SUB-CONTRACTORS<br><small>V6.6</small></h2>
+    <p id="currentUserText"></p>
+    <button class="admin-only" onclick="showPage('homePage')">الرئيسية</button>
+    <button class="admin-only" onclick="showPage('contractorsPage');loadContractors()">قائمة المقاولين المعتمدين</button>
+    <button class="admin-only" onclick="showPage('ordersPage');loadOrders()">أوامر الإسناد والتوريد</button>
+    <button onclick="showPage('extractsPage');loadExtracts()">المستخلصات</button>
+    <button class="admin-only" onclick="showPage('statementPage');loadStatement()">كشف حساب</button>
+    <button class="admin-only" onclick="showPage('usersPage');loadUsers()">اعتماد / حذف الأعضاء</button>
+    <button class="red" onclick="logout()">تسجيل خروج</button>
+  </div>
+
+  
+  <div class="topbar no-print">
+    <div class="brand"><span class="ag">AG</span> <span>AIR</span><small>For Cooling & Air Conditioning</small></div>
+    <div class="hamb">☰</div>
+  </div>
+  <div class="main">
+
+    <div id="homePage" class="card page">
+      <h2>الرئيسية</h2>
+      <div class="summary">
+        <div class="box"><h3>المقاولين</h3><h2 id="sumContractors">0</h2></div>
+        <div class="box"><h3>أوامر الإسناد</h3><h2 id="sumOrders">0</h2></div>
+        <div class="box"><h3>المستخلصات</h3><h2 id="sumExtracts">0</h2></div>
+      </div>
+    </div>
+
+    <div id="contractorsPage" class="card page hidden">
+      <h2>قائمة المقاولين المعتمدين</h2>
+      <div class="toolbar">
+        <button class="green" onclick="openContractorModal()">إضافة مقاول / مورد</button>
+        <input id="contractorSearch" style="max-width:260px" placeholder="بحث بالكود / الاسم / مجال الأعمال" oninput="renderContractors()">
+      </div>
+      <div id="contractorsArea"></div>
+    </div>
+
+    <div id="ordersPage" class="card page hidden">
+      <h2>أوامر الإسناد والتوريد</h2>
+      <div class="toolbar">
+        <button id="openOrderBtn" class="green" type="button" onclick="openOrderModal()">إضافة أمر إسناد / توريد</button>
+        <input id="orderSearch" style="max-width:260px" placeholder="بحث برقم الأمر أو المقاول" oninput="renderOrders()">
+      </div>
+      <div id="ordersArea"></div>
+    </div>
+
+    <div id="extractsPage" class="card page hidden">
+      <h2>المستخلصات</h2>
+      <div class="toolbar">
+        <button id="addExtractBtn" class="green" onclick="openExtractModal()">إضافة مستخلص</button>
+        <input id="extractSearch" style="max-width:260px" placeholder="بحث بالمقاول / رقم المستخلص" oninput="renderExtracts()">
+      </div>
+      <div id="extractsArea"></div>
+    </div>
+
+    <div id="statementPage" class="card page hidden">
+      <h2>كشف حساب المقاول</h2>
+      <div class="grid">
+        <select id="statementContractor"></select>
+        <button onclick="loadStatement()">عرض كشف الحساب</button>
+        <button class="gray" onclick="printStatement()">طباعة</button>
+      </div>
+      <div id="statementArea" class="print-area"></div>
+    </div>
+
+    <div id="usersPage" class="card page hidden">
+      <h2>اعتماد / حذف الأعضاء</h2>
+      <div id="usersArea"></div>
+    </div>
+  
+  </div>
+  <div class="footerbar no-print">
+    <span>© 2026 AG AIR For Cooling & Air Conditioning - All Rights Reserved.</span>
+    <span id="systemClock">تاريخ ووقت النظام</span>
+  </div>
+</div>
+
+<!-- Contractor Modal -->
+<div id="contractorModal" class="modal-bg">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>إضافة / تعديل مقاول أو مورد</h2>
+      <button class="red small" onclick="closeModal('contractorModal')">إغلاق</button>
+    </div>
+    <input type="hidden" id="contractorId">
+    <div class="grid">
+      <div class="field"><label>كود المورد / المقاول</label><input id="contractorCode"></div>
+      <div class="field"><label>اسم المورد / المقاول</label><input id="contractorName"></div>
+      <div class="field"><label>مجال الأعمال</label><input id="businessScope"></div>
+      <div class="field"><label>رقم الهاتف</label><input id="phone"></div>
+      <div class="field"><label>رقم هاتف آخر</label><input id="phone2"></div>
+      <div class="field"><label>الفاكس</label><input id="fax"></div>
+      <div class="field"><label>العنوان</label><input id="address"></div>
+      <div class="field"><label>اسم المسؤول</label><input id="responsiblePerson"></div>
+      <div class="field"><label>البطاقة الضريبية</label><input id="taxCard"></div>
+      <div class="field"><label>السجل التجاري</label><input id="commercialRegister"></div>
+      <div class="field"><label>ملاحظات</label><input id="contractorNotes"></div>
+    </div>
+    <br>
+    <button class="green" onclick="saveContractor()">حفظ</button>
+  </div>
+</div>
+
+<!-- Order Modal -->
+<div id="orderModal" class="modal-bg">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>أمر إسناد / توريد</h2>
+      <button class="red small" onclick="closeModal('orderModal')">إغلاق</button>
+    </div>
+    <input type="hidden" id="orderId">
+    <div class="a4 print-area" id="orderPrintArea">
+      <div class="doc-title">أمر إسناد / توريد</div>
+      <div class="grid">
+        <div class="field"><label>رقم الأمر</label><input id="orderNo" readonly></div>
+        <div class="field"><label>التاريخ</label><input id="orderDate" type="date"></div>
+        <div class="field"><label>اسم المشروع</label><input id="orderProjectName" placeholder="اسم المشروع"></div>
+        <div class="field"><label>اسم المقاول / المورد</label><select id="orderContractor" onchange="fillOrderContractor()"></select></div>
+        <div class="field"><label>كود المقاول</label><input id="orderContractorCode" readonly></div>
+        <div class="field"><label>التليفون</label><input id="orderPhone" readonly></div>
+        <div class="field"><label>العنوان</label><input id="orderAddress" readonly></div>
+      </div>
+      <div class="letter-text">
+        <b>السادة / <span id="letterContractorName">................</span></b><br>
+        تحية طيبة وبعد،<br>
+        نتشرف نحن شركة إيجي إير للتكييف والتبريد بإسناد أعمال التوريد / الأعمال الوارد بيانها في الجدول التالي:
+      </div>
+      <div class="toolbar no-print">
+        <button class="green small" onclick="addOrderItemRow()">إضافة بند</button>
+      </div>
+      <div class="table-wrap" style="max-height:none">
+        <table class="table order-table">
+          <thead>
+            <tr><th>مسلسل</th><th>البيان / الوصف</th><th>الوحدة</th><th>الكمية</th><th>الفئة بالجنيه المصري</th><th>الإجمالي بالجنيه المصري</th><th class="no-print">حذف</th></tr>
+          </thead>
+          <tbody id="orderItemsBody"></tbody>
+        </table>
+      </div>
+      <div class="total-line">الإجمالي الكلي: <span id="orderTotal">0</span> جنيه مصري</div>
+      <div class="order-closing">
+        <div class="closing-text">
+          وتفضلوا بقبول وافر الاحترام والتقدير
+          <br>
+          <span>شركة إيجي إير للتبريد والتكييف</span>
+        </div>
+        <div class="sign-grid">
+          <div class="sign-box">
+            <h3>المقاول / المورد</h3>
+            <div class="sign-line">........................................</div>
+          </div>
+          <div class="sign-box approval-box">
+            <h3>يعتمد</h3>
+            <div id="approvalSection">
+              <input type="password" id="adminApprovalPassword" placeholder="أدخل كلمة مرور السوبر أدمن">
+              <button class="green" onclick="approveOrderWithPassword()">اعتماد أمر التوريد</button>
+              <p class="approval-note">* لا يمكن تعديل أو حذف أمر التوريد بعد اعتماده إلا من قبل السوبر أدمن</p>
+            </div>
+            <div id="approvedStamp" class="hidden">
+              <h2>✓ تم الاعتماد</h2>
+              <p>بواسطة السوبر أدمن</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="toolbar no-print">
+      <button class="green" onclick="saveOrder()">حفظ</button>
+      <button class="orange" onclick="approveOrderWithPassword()">اعتماد</button>
+      <button class="gray" onclick="window.print()">طباعة / PDF</button>
+      <button class="blue" onclick="openOrderModal()">جديد</button>
+    </div>
+  </div>
+</div>
+
+<!-- Extract Modal -->
+<div id="extractModal" class="modal-bg">
+  <div class="modal">
+    <div class="modal-header no-print">
+      <h2>تفاصيل المستخلص</h2>
+      <button class="red small" onclick="closeModal('extractModal')">إغلاق</button>
+    </div>
+    <input type="hidden" id="extractId">
+
+    <div class="a4 print-area" id="extractPrintArea">
+      <div class="extract-top-fields no-print">
+        <div class="field"><label>رقم المستخلص لهذا الأمر</label><input id="extractNo" readonly></div>
+        <div class="field"><label>رقم أمر التوريد / الإسناد</label><select id="extractOrder" onchange="loadOrderToExtract(true)"></select></div>
+        <div class="field"><label>المقاول / المورد</label><input id="extractContractorName" readonly></div>
+        <div class="field"><label>المشروع</label><input id="extractProjectName" readonly></div>
+        <div class="field"><label>التاريخ</label><input id="extractDate" type="date"></div>
+        <div class="field"><label>من أعمال من</label><input id="extractWorkFrom" type="date"></div>
+        <div class="field"><label>إلى</label><input id="extractWorkTo" type="date"></div>
+      </div>
+
+      <div class="extract-current-note no-print">يتم سحب بيانات أمر التوريد تلقائياً، ورقم المستخلص يكون مسلسل خاص بنفس أمر التوريد، والمسموح تعديله فقط هو خانة <b>الحالي</b> في الكميات.</div>
+      <div class="extract-doc" id="extractDoc">
+        <div class="extract-header">
+          <div class="extract-side-info" id="extractLeftInfo">
+المشروع :
+المالك :
+المقاول :
+التاريخ :
+          </div>
+
+          <div class="extract-brand-center">
+            <div class="extract-logo"><span class="ag">AG</span> <span class="air">AIR</span></div>
+            <div class="extract-sub-logo">For Cooling & Air Conditioning</div>
+            <div class="extract-title-lines">
+              رقم أمر التوريد / الإسناد<br>
+              <span id="extractHeaderOrderNo" class="extract-order-no-value">---</span><br>
+              مستخلص رقم : <span id="extractHeaderNo">1</span> &nbsp;&nbsp; جاري<br>
+              في المدة من <span id="extractHeaderFrom">--</span> إلى <span id="extractHeaderTo">--</span>
+            </div>
+          </div>
+
+          <div class="extract-ag-info">
+            شركة AG AIR للتبريد والتكييف<br>
+            أعمال تكييف وتبريد وتهوية<br>
+            <br>
+            رقم المستخلص: <span id="extractTopNo">---</span><br>
+            التاريخ: <span id="extractTopDate">---</span>
+          </div>
+        </div>
+
+        <table class="extract-prof-table">
+          <thead>
+            <tr>
+              <th rowspan="2">م</th>
+              <th rowspan="2">نوع العمل</th>
+              <th rowspan="2">كمية<br>P.O</th>
+              <th rowspan="2">الوحدة</th>
+              <th colspan="3">الكميات المنفذة</th>
+              <th rowspan="2">الفئة</th>
+              <th colspan="3">القيمة الإجمالية بال EGP</th>
+              <th rowspan="2">ملاحظات</th>
+            </tr>
+            <tr>
+              <th>السابق</th>
+              <th>الحالي</th>
+              <th>الإجمالي</th>
+              <th>السابق</th>
+              <th>الحالي</th>
+              <th>الإجمالي</th>
+            </tr>
+          </thead>
+          <tbody id="extractItemsBody"></tbody>
+          <tfoot>
+            <tr class="extract-total-row">
+              <td colspan="8" style="text-align:right">إجمالي المستخلص بالجنيه المصري :</td>
+              <td id="extractPrevTotal">0</td>
+              <td id="extractCurrentTotal">0</td>
+              <td id="extractToDateTotal">0</td>
+              <td></td>
+            </tr>
+            <tr class="extract-net-row">
+              <td colspan="9" style="text-align:right">NET Value with tax:</td>
+              <td colspan="2" id="extractNetValue">0</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div class="extract-approvals">
+          <div class="extract-approval-card">
+            <h3>مهندس الموقع</h3>
+            <div id="siteApprovalBox">
+              <input type="password" id="siteApprovalPassword" placeholder="أدخل كلمة مرور الاعتماد">
+              <br>
+              <button class="green" onclick="approveExtractSite()">اعتماد</button>
+              <div id="siteApprovalStatus" class="approval-status waiting">● في انتظار الاعتماد</div>
+            </div>
+          </div>
+
+          <div class="extract-approval-card">
+            <h3>يعتمد (الاعتماد النهائي)</h3>
+            <div id="finalApprovalBox">
+              <input type="password" id="finalApprovalPassword" placeholder="أدخل كلمة مرور السوبر أدمن">
+              <br>
+              <button class="green" onclick="approveExtractFinal()">اعتماد نهائي</button>
+              <div id="finalApprovalStatus" class="approval-status waiting">● في انتظار الاعتماد</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+      <div class="extract-attachments no-print">
+        <h3>مرفقات المستخلص</h3>
+        <p>يمكن رفع الحصر، الرسومات، الصور، أو أي ملفات تخص المستخلص.</p>
+        <div class="toolbar">
+          <input type="file" id="extractAttachmentsInput" multiple onchange="handleExtractAttachments(event)" style="max-width:420px">
+          <button class="gray small" onclick="document.getElementById('extractAttachmentsInput').click()">اختيار مرفقات</button>
+        </div>
+        <div id="extractAttachmentsList" class="attachments-list"></div>
+      </div>
+
+    <div class="toolbar no-print extract-actions">
+      <button class="blue" onclick="closeModal('extractModal')">رجوع</button>
+      <button class="green" onclick="saveExtract()">حفظ</button>
+      <button class="orange" onclick="printExtract()">تصدير / PDF</button>
+      <button class="gray" onclick="printExtract()">طباعة</button>
+      <button class="red admin-only" onclick="deleteCurrentExtract()">حذف</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===============================
+   IMPORTANT: ضع بيانات Supabase هنا
+   =============================== */
+const SUPABASE_URL = "https://qsfbbsnjwoltvppfmgvi.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_Nhl9BWQngYQKiz140tYYHg_Qe-Xa2wQ";
+
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentUser = null;
+let contractorsCache = [];
+let ordersCache = [];
+let orderItemsCache = [];
+let extractsCache = [];
+let extractItemsCache = [];
+let currentExtractOrderNoForDisplay = '';
+let extractOrderLoadingNow = false;
+let extractAttachmentsPending = [];
+
+function today(){ return new Date().toISOString().slice(0,10); }
+function money(v){ return Number(v||0).toLocaleString('en-US',{maximumFractionDigits:2}); }
+function val(id){ return document.getElementById(id)?.value || ""; }
+function setVal(id,v){ const e=document.getElementById(id); if(e) e.value = v ?? ""; }
+function closeModal(id){
+  const el = document.getElementById(id);
+  if(el) el.style.display='none';
+}
+function openModal(id){
+  const el = document.getElementById(id);
+  if(el){
+    el.style.display='flex';
+    el.classList.remove('hidden');
+    el.style.zIndex='9999';
+  }
+}
+function statusBadge(s){ return `<span class="badge ${s||'draft'}">${s==='approved'||s==='final_approved'?'معتمد نهائي':s==='site_approved'?'اعتماد مهندس الموقع':s==='pending'?'قيد الاعتماد':'مسودة'}</span>`; }
+function isAdmin(){ return currentUser && currentUser.role === "super_admin"; }
+
+function isExtractFinalApproved(e){
+  return e && (e.status === 'approved' || e.status === 'final_approved');
+}
+function formatDateDMY(v){
+  if(!v) return '--';
+  const d = new Date(v);
+  if(isNaN(d)) return v;
+  return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear();
+}
+function getExtractSerialText(no){
+  const m = String(no||'').match(/(\d+)$/);
+  return m ? String(Number(m[1])) : (no||'1');
+}
+function setExtractReadOnly(flag){
+  const doc=document.getElementById('extractDoc');
+  if(!doc) return;
+  if(flag) doc.classList.add('extract-readonly-lock');
+  else doc.classList.remove('extract-readonly-lock');
+  document.querySelectorAll('#extractItemsBody .extCurrentQty').forEach(inp=>{
+    inp.readOnly = !!flag;
+  });
+}
+function forceExtractOrderNoDisplay(orderNo){
+  if(orderNo) currentExtractOrderNoForDisplay = orderNo;
+  const no = currentExtractOrderNoForDisplay || val('extractOrderNo') || '';
+  const ids = [
+    'extractHeaderOrderNo',
+    'extractTopOrderNo',
+    'extractOrderNoGreenBox',
+    'extractOrderNoPrintBox'
+  ];
+  ids.forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.textContent = no || '---';
+  });
+
+  document.querySelectorAll('.extract-order-no-value').forEach(el=>{
+    el.textContent = no || '---';
+  });
+}
+
+
+function buildStoredExtractNo(orderNo, serialNo){
+  const cleanOrder = String(orderNo || 'ORD').trim();
+  const cleanSerial = String(serialNo || '1').trim();
+  return `${cleanOrder}-EXT-${cleanSerial}`;
+}
+function displayExtractSerial(storedNo){
+  const raw = String(storedNo || '');
+  const m = raw.match(/-EXT-(\d+)$/);
+  if(m) return String(Number(m[1]));
+  return getExtractSerialText(raw);
+}
+
+function getNextExtractSerialForOrder(orderId){
+  const same = extractsCache.filter(e => Number(e.order_id) === Number(orderId));
+  let maxNo = 0;
+  same.forEach(e=>{
+    const raw = String(e.extract_no || '');
+    let m = raw.match(/-EXT-(\d+)$/);
+    if(!m) m = raw.match(/(\d+)$/);
+    if(m) maxNo = Math.max(maxNo, Number(m[1]));
+  });
+  return maxNo + 1;
+}
+
+function updateExtractHeader(){
+  const project=val('extractProjectName')||'';
+  const contractor=val('extractContractorName')||'';
+  const orderNo=currentExtractOrderNoForDisplay || val('extractOrderNo') || '';
+  const exNo=val('extractNo')||'';
+  const exDate=val('extractDate')||today();
+  const from=val('extractWorkFrom')||exDate;
+  const to=val('extractWorkTo')||exDate;
+  const left=document.getElementById('extractLeftInfo');
+  if(left){
+    left.textContent =
+`المشروع : ${project}
+المالك : 
+المقاول : ${contractor}
+التاريخ : ${formatDateDMY(exDate)}`;
+  }
+  const ids = {
+    extractHeaderOrderNo: orderNo,
+    extractTopOrderNo: orderNo,
+    extractHeaderNo: displayExtractSerial(exNo),
+    extractHeaderFrom: formatDateDMY(from),
+    extractHeaderTo: formatDateDMY(to),
+    extractTopNo: exNo,
+    extractTopDate: formatDateDMY(exDate)
+  };
+  Object.entries(ids).forEach(([id,text])=>{
+    const el=document.getElementById(id);
+    if(el) el.textContent=text;
+  });
+  forceExtractOrderNoDisplay(orderNo);
+}
+function setApprovalVisual(siteDone, finalDone){
+  const site=document.getElementById('siteApprovalStatus');
+  const final=document.getElementById('finalApprovalStatus');
+  if(site){
+    site.className='approval-status '+(siteDone?'done':'waiting');
+    site.innerHTML=siteDone?'✓ تم اعتماد مهندس الموقع':'● في انتظار الاعتماد';
+  }
+  if(final){
+    final.className='approval-status '+(finalDone?'done':'waiting');
+    final.innerHTML=finalDone?'✓ تم الاعتماد النهائي':'● في انتظار الاعتماد';
+  }
+}
+
+
+function showRegister(){ loginBox.classList.add('hidden'); registerBox.classList.remove('hidden'); loginMsg.textContent=''; }
+function showLogin(){ registerBox.classList.add('hidden'); loginBox.classList.remove('hidden'); loginMsg.textContent=''; }
+
+async function login(){
+  const username = val('loginUser').trim();
+  const password = val('loginPass').trim();
+
+  if(!username || !password){
+    loginMsg.textContent='اكتب اليوزر والباسورد';
+    return;
+  }
+
+  let data = null;
+  let error = null;
+
+  let res = await client
+    .from('sc_users')
+    .select('*')
+    .eq('username', username)
+    .eq('password', password)
+    .maybeSingle();
+
+  data = res.data;
+  error = res.error;
+
+  if(!data && !error){
+    const res2 = await client
+      .from('sc_users')
+      .select('*')
+      .ilike('username', username)
+      .eq('password', password)
+      .limit(1);
+
+    if(res2.error){
+      error = res2.error;
+    }else if(res2.data && res2.data.length){
+      data = res2.data[0];
+    }
+  }
+
+  if(error){
+    console.error('Login error:', error);
+    loginMsg.textContent='خطأ اتصال بقاعدة البيانات أو صلاحيات Supabase';
+    return;
+  }
+
+  if(!data){
+    loginMsg.textContent='بيانات الدخول غير صحيحة';
+    return;
+  }
+
+  if(String(data.status || '').trim() !== 'approved'){
+    loginMsg.textContent='هذا المستخدم لم يتم اعتماده من السوبر أدمن';
+    return;
+  }
+
+  currentUser = data;
+  localStorage.setItem('sc_current_user', JSON.stringify(data));
+  await startApp();
+}
+
+async function registerUser(){
+  const username = val('regUser').trim();
+  const password = val('regPass').trim();
+  if(!username || !password){ loginMsg.textContent='اكتب اليوزر والباسورد'; return; }
+  const {error} = await client.from('sc_users').insert({username,password,role:'user',status:'pending'});
+  if(error){ loginMsg.textContent='اسم المستخدم موجود أو حدث خطأ'; return; }
+  loginMsg.textContent='تم التسجيل. انتظر اعتماد السوبر أدمن.';
+  showLogin();
+}
+
+function logout(){
+  localStorage.removeItem('sc_current_user');
+  location.reload();
+}
+
+async function startApp(){
+  loginPage.style.display='none';
+  app.style.display='block';
+  currentUserText.textContent = `User: ${currentUser.username} - ${currentUser.role}`;
+
+  document.querySelectorAll('.admin-only').forEach(el=>{
+    if(isAdmin()) el.classList.remove('hidden'); else el.classList.add('hidden');
+  });
+
+  try{
+    if(isAdmin()) showPage('homePage'); else showPage('extractsPage');
+    await loadAllBasic();
+    await loadDashboard();
+    if(!isAdmin()){
+      await loadOrders(false);
+      await loadExtracts();
+    }
+  }catch(e){
+    console.error('Start app error:', e);
+    alert('تم تسجيل الدخول، لكن حدث خطأ أثناء تحميل البيانات. راجع صلاحيات Supabase.');
+  }
+}
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+async function loadAllBasic(){
+  await loadContractors(false);
+  await loadOrders(false);
+  await loadExtracts(false);
+  refreshContractorSelects();
+}
+
+async function loadDashboard(){
+  const [{count:c1},{count:c2},{count:c3}] = await Promise.all([
+    client.from('sc_contractors').select('*',{count:'exact',head:true}),
+    client.from('sc_orders').select('*',{count:'exact',head:true}),
+    client.from('sc_extracts').select('*',{count:'exact',head:true})
+  ]);
+  sumContractors.textContent=c1||0; sumOrders.textContent=c2||0; sumExtracts.textContent=c3||0;
+}
+
+/* ================= Contractors ================= */
+
+async function loadContractors(render=true){
+  const {data,error}=await client.from('sc_contractors').select('*').order('id',{ascending:false});
+  if(error){ if(render) contractorsArea.innerHTML='خطأ تحميل المقاولين'; return; }
+  contractorsCache=data||[];
+  refreshContractorSelects();
+  if(render) renderContractors();
+}
+
+function renderContractors(){
+  const q=(val('contractorSearch')||'').toLowerCase().trim();
+  let rows=contractorsCache.filter(c=>!q || [c.contractor_code,c.contractor_name,c.business_scope,c.phone].some(x=>String(x||'').toLowerCase().includes(q)));
+  contractorsArea.innerHTML = `<div class="table-wrap"><table class="table">
+  <thead><tr><th>الكود</th><th>الاسم</th><th>مجال الأعمال</th><th>الهاتف</th><th>العنوان</th><th>المسؤول</th><th>أوامر التوريد</th><th>إجراءات</th></tr></thead>
+  <tbody>${rows.map(c=>{
+    const count=ordersCache.filter(o=>o.contractor_id===c.id).length;
+    return `<tr><td>${c.contractor_code||''}</td><td>${c.contractor_name||''}</td><td>${c.business_scope||''}</td><td>${c.phone||''}</td><td>${c.address||''}</td><td>${c.responsible_person||''}</td><td>${count}</td>
+    <td><button class="small" onclick="editContractor(${c.id})">تعديل</button> <button class="small gray" onclick="showContractorDetails(${c.id})">كل التفاصيل</button></td></tr>`;
+  }).join('')}</tbody></table></div>`;
+}
+
+function openContractorModal(){
+  contractorId.value='';
+  ['contractorCode','contractorName','businessScope','phone','phone2','fax','address','responsiblePerson','taxCard','commercialRegister','contractorNotes'].forEach(id=>setVal(id,''));
+  openModal('contractorModal');
+}
+
+function editContractor(id){
+  const c=contractorsCache.find(x=>x.id===id); if(!c) return;
+  setVal('contractorId',c.id); setVal('contractorCode',c.contractor_code); setVal('contractorName',c.contractor_name);
+  setVal('businessScope',c.business_scope); setVal('phone',c.phone); setVal('phone2',c.phone2); setVal('fax',c.fax);
+  setVal('address',c.address); setVal('responsiblePerson',c.responsible_person); setVal('taxCard',c.tax_card);
+  setVal('commercialRegister',c.commercial_register); setVal('contractorNotes',c.notes);
+  openModal('contractorModal');
+}
+
+async function saveContractor(){
+  const payload={
+    contractor_code:val('contractorCode').trim(), contractor_name:val('contractorName').trim(),
+    phone:val('phone'), phone2:val('phone2'), address:val('address'), fax:val('fax'),
+    responsible_person:val('responsiblePerson'), tax_card:val('taxCard'), commercial_register:val('commercialRegister'),
+    business_scope:val('businessScope'), notes:val('contractorNotes'), updated_at:new Date().toISOString()
+  };
+  if(!payload.contractor_code || !payload.contractor_name){ alert('اكتب كود واسم المقاول'); return; }
+  let error;
+  if(val('contractorId')){
+    ({error}=await client.from('sc_contractors').update(payload).eq('id',Number(val('contractorId'))));
+  }else{
+    payload.created_by=currentUser.username;
+    ({error}=await client.from('sc_contractors').insert(payload));
+  }
+  if(error){ alert('خطأ الحفظ: ربما كود المقاول مكرر'); return; }
+  closeModal('contractorModal'); await loadContractors(); await loadDashboard();
+}
+
+function showContractorDetails(id){
+  const c=contractorsCache.find(x=>x.id===id); if(!c) return;
+  const related=ordersCache.filter(o=>o.contractor_id===id).map(o=>`${o.order_no} - ${money(o.total_amount)} - ${o.status}`).join('\n');
+  alert(`بيانات المقاول:\n${c.contractor_name}\nالكود: ${c.contractor_code}\nالهاتف: ${c.phone||''}\nالعنوان: ${c.address||''}\nمجال الأعمال: ${c.business_scope||''}\n\nأوامر التوريد:\n${related||'لا يوجد'}`);
+}
+
+/* ================= Orders ================= */
+
+async function loadOrders(render=true){
+  const {data,error}=await client.from('sc_orders').select('*').order('id',{ascending:false});
+  if(error){ if(render) ordersArea.innerHTML='خطأ تحميل أوامر التوريد'; return; }
+  ordersCache=data||[];
+  const {data:items}=await client.from('sc_order_items').select('*').order('serial_no');
+  orderItemsCache=items||[];
+  refreshOrderSelects();
+  if(render) renderOrders();
+}
+
+function renderOrders(){
+  const q=(val('orderSearch')||'').toLowerCase().trim();
+  let rows=ordersCache.filter(o=>!q || [o.order_no,o.contractor_name,o.contractor_code].some(x=>String(x||'').toLowerCase().includes(q)));
+  ordersArea.innerHTML = `<div class="table-wrap"><table class="table">
+  <thead><tr><th>رقم الأمر</th><th>التاريخ</th><th>المشروع</th><th>المقاول</th><th>القيمة</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+  <tbody>${rows.map(o=>`<tr><td>${o.order_no||''}</td><td>${o.order_date||''}</td><td>${o.project_name||''}</td><td>${o.contractor_name||''}</td><td>${money(o.total_amount)}</td><td>${statusBadge(o.status)}</td>
+  <td><button class="small" onclick="editOrder(${o.id})">فتح</button> ${isAdmin()?`<button class="small red" onclick="deleteOrder(${o.id})">حذف</button>`:''}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+async function openOrderModal(){
+  const orderIdEl = document.getElementById('orderId');
+  const orderItemsBodyEl = document.getElementById('orderItemsBody');
+
+  if(orderIdEl) orderIdEl.value = '';
+
+  // افتح الشاشة فوراً حتى لو رقم الأمر لم يتحمل من Supabase
+  openModal('orderModal');
+
+  let newNo = 'SC-ORD-' + String(Date.now()).slice(-6);
+  try{
+    const {data,error} = await client.rpc('sc_next_order_no');
+    if(!error && data) newNo = data;
+  }catch(e){
+    console.warn('Could not load next order number', e);
+  }
+
+  setVal('orderNo', newNo);
+  setVal('orderDate', today());
+  setVal('orderProjectName','');
+  setVal('orderContractor','');
+  fillOrderContractor();
+
+  if(orderItemsBodyEl) orderItemsBodyEl.innerHTML = '';
+  for(let i=0;i<10;i++) addOrderItemRow();
+  calcOrderTotal();
+
+  const sec=document.getElementById('approvalSection');
+  const stamp=document.getElementById('approvedStamp');
+  if(sec && stamp){
+    sec.classList.remove('hidden');
+    stamp.classList.add('hidden');
+  }
+}
+
+function addOrderItemRow(item={}){
+  const body = document.getElementById('orderItemsBody');
+  if(!body){ alert('جدول البنود غير موجود'); return; }
+
+  const idx = body.children.length + 1;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${idx}</td>
+  <td><textarea class="ordDesc">${item.description||''}</textarea></td>
+  <td><input class="ordUnit" value="${item.unit||''}"></td>
+  <td><input class="ordQty" type="number" step="0.001" value="${item.qty||0}" oninput="calcOrderTotal()"></td>
+  <td><input class="ordPrice" type="number" step="0.01" value="${item.unit_price||0}" oninput="calcOrderTotal()"></td>
+  <td class="ordTotal">${money(Number(item.qty||0)*Number(item.unit_price||0))}</td>
+  <td class="no-print"><button class="small red" onclick="this.closest('tr').remove();renumberRows('orderItemsBody');calcOrderTotal()">حذف</button></td>`;
+  body.appendChild(tr);
+}
+
+function renumberRows(bodyId){
+  document.querySelectorAll(`#${bodyId} tr`).forEach((tr,i)=>tr.children[0].textContent=i+1);
+}
+
+function calcOrderTotal(){
+  let total=0;
+  document.querySelectorAll('#orderItemsBody tr').forEach(tr=>{
+    const q=Number(tr.querySelector('.ordQty')?.value||0);
+    const p=Number(tr.querySelector('.ordPrice')?.value||0);
+    const t=q*p; total+=t;
+    tr.querySelector('.ordTotal').textContent=money(t);
+  });
+  orderTotal.textContent=money(total);
+  return total;
+}
+
+function fillOrderContractor(){
+  const id=Number(val('orderContractor')||0);
+  const c=contractorsCache.find(x=>x.id===id);
+  setVal('orderContractorCode',c?.contractor_code||'');
+  setVal('orderPhone',c?.phone||'');
+  setVal('orderAddress',c?.address||'');
+  letterContractorName.textContent=c?.contractor_name||'................';
+}
+
+async function saveOrder(){
+  const currentOrder=ordersCache.find(o=>o.id===Number(val('orderId')));
+  if(currentOrder && currentOrder.status==='approved' && !isAdmin()){ alert('أمر التوريد معتمد ولا يمكن تعديله إلا من السوبر أدمن'); return; }
+  const contractor=contractorsCache.find(c=>c.id===Number(val('orderContractor')));
+  if(!contractor){ alert('اختر المقاول'); return; }
+  const total=calcOrderTotal();
+  const payload={
+    order_no:val('orderNo'), order_date:val('orderDate'), project_name:val('orderProjectName'), contractor_id:contractor.id,
+    contractor_code:contractor.contractor_code, contractor_name:contractor.contractor_name,
+    phone:contractor.phone, address:contractor.address,
+    subject_text:'نتشرف نحن شركة إيجي إير للتكييف والتبريد بإسناد أعمال التوريد / الأعمال الوارد بيانها في الجدول التالي',
+    total_amount:total, updated_at:new Date().toISOString()
+  };
+  let orderResult,error;
+  if(val('orderId')){
+    ({error}=await client.from('sc_orders').update(payload).eq('id',Number(val('orderId'))));
+    orderResult={id:Number(val('orderId'))};
+    await client.from('sc_order_items').delete().eq('order_id',orderResult.id);
+  }else{
+    payload.created_by=currentUser.username;
+    ({data:orderResult,error}=await client.from('sc_orders').insert(payload).select().single());
+  }
+  if(error){ alert('خطأ حفظ الأمر: رقم الأمر قد يكون مكرر'); return; }
+  const items=[];
+  document.querySelectorAll('#orderItemsBody tr').forEach((tr,i)=>{
+    const desc=tr.querySelector('.ordDesc').value.trim();
+    if(desc) items.push({
+      order_id:orderResult.id, serial_no:i+1, description:desc,
+      unit:tr.querySelector('.ordUnit').value, qty:Number(tr.querySelector('.ordQty').value||0),
+      unit_price:Number(tr.querySelector('.ordPrice').value||0)
+    });
+  });
+  if(items.length) await client.from('sc_order_items').insert(items);
+  alert('تم حفظ أمر التوريد');
+  setVal('orderId',orderResult.id);
+  await loadOrders(); await loadDashboard();
+}
+
+async function editOrder(id){
+  await loadOrders(false);
+  const o=ordersCache.find(x=>x.id===id); if(!o) return;
+  setVal('orderId',o.id); setVal('orderNo',o.order_no); setVal('orderDate',o.order_date); setVal('orderProjectName',o.project_name||''); setVal('orderContractor',o.contractor_id);
+  fillOrderContractor();
+  orderItemsBody.innerHTML='';
+  orderItemsCache.filter(i=>i.order_id===id).forEach(i=>addOrderItemRow(i));
+  calcOrderTotal();
+  const sec=document.getElementById('approvalSection'); const stamp=document.getElementById('approvedStamp');
+  if(sec && stamp){sec.classList.remove('hidden'); stamp.classList.add('hidden');}
+  openModal('orderModal');
+}
+
+
+async function approveOrderWithPassword(){
+  if(!isAdmin()){ alert('الاعتماد للسوبر أدمن فقط'); return; }
+  const passInput=document.getElementById('adminApprovalPassword');
+  const pass=passInput ? passInput.value : prompt('أدخل كلمة مرور السوبر أدمن');
+  if(pass !== '689523741'){ alert('كلمة مرور السوبر أدمن غير صحيحة'); return; }
+  if(!val('orderId')) await saveOrder();
+  const id=Number(val('orderId')); if(!id) return;
+  const {error}=await client.from('sc_orders').update({status:'approved',approved_by:currentUser.username,approved_at:new Date().toISOString()}).eq('id',id);
+  if(error){ alert('خطأ الاعتماد'); return; }
+  const sec=document.getElementById('approvalSection');
+  const stamp=document.getElementById('approvedStamp');
+  if(sec) sec.classList.add('hidden');
+  if(stamp) stamp.classList.remove('hidden');
+  alert('تم اعتماد أمر التوريد');
+  await loadOrders();
+}
+
+async function approveOrder(){
+  if(!isAdmin()){ alert('الاعتماد للسوبر أدمن فقط'); return; }
+  if(!val('orderId')) await saveOrder();
+  const id=Number(val('orderId')); if(!id) return;
+  const {error}=await client.from('sc_orders').update({status:'approved',approved_by:currentUser.username,approved_at:new Date().toISOString()}).eq('id',id);
+  if(error){ alert('خطأ الاعتماد'); return; }
+  alert('تم اعتماد الأمر'); await loadOrders();
+}
+
+async function deleteOrder(id){
+  if(!isAdmin()){ alert('الحذف للسوبر أدمن فقط'); return; }
+  const ord=ordersCache.find(o=>o.id===id);
+  if(ord && ord.status==='approved'){
+    const pass=prompt('أمر معتمد. أدخل كلمة مرور السوبر أدمن للحذف');
+    if(pass !== '689523741'){ alert('كلمة المرور غير صحيحة'); return; }
+  }
+  if(!confirm('هل تريد حذف أمر التوريد؟')) return;
+  const {error}=await client.from('sc_orders').delete().eq('id',id);
+  if(error){ alert('لا يمكن الحذف لوجود مستخلصات مرتبطة أو خطأ في الحذف'); return; }
+  await loadOrders(); await loadDashboard();
+}
+
+
+function fileToDataUrl(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleExtractAttachments(event){
+  const files = Array.from(event.target.files || []);
+  if(!files.length) return;
+
+  for(const file of files){
+    if(file.size > 8 * 1024 * 1024){
+      alert(`الملف ${file.name} أكبر من 8MB ولن يتم رفعه`);
+      continue;
+    }
+    const dataUrl = await fileToDataUrl(file);
+    extractAttachmentsPending.push({
+      name:file.name,
+      type:file.type || 'application/octet-stream',
+      size:file.size,
+      data:dataUrl,
+      added_by: currentUser?.username || '',
+      added_at: new Date().toISOString()
+    });
+  }
+
+  event.target.value = '';
+  renderExtractAttachments();
+}
+
+function renderExtractAttachments(){
+  const area = document.getElementById('extractAttachmentsList');
+  if(!area) return;
+
+  if(!extractAttachmentsPending.length){
+    area.innerHTML = '<span style="font-weight:bold;color:#64748b">لا توجد مرفقات حتى الآن</span>';
+    return;
+  }
+
+  area.innerHTML = extractAttachmentsPending.map((a,i)=>`
+    <div class="attach-item">
+      <span>📎</span>
+      <a href="${a.data}" download="${a.name}" target="_blank">${a.name}</a>
+      <span>${Math.round((a.size||0)/1024)} KB</span>
+      <button class="red small" onclick="removeExtractAttachment(${i})">حذف</button>
+    </div>
+  `).join('');
+}
+
+function removeExtractAttachment(index){
+  if(!confirm('حذف هذا المرفق؟')) return;
+  extractAttachmentsPending.splice(index,1);
+  renderExtractAttachments();
+}
+
+/* ================= Extracts ================= */
+
+async function loadExtracts(render=true){
+  const {data,error}=await client.from('sc_extracts').select('*').order('id',{ascending:false});
+  if(error){ if(render) extractsArea.innerHTML='خطأ تحميل المستخلصات'; return; }
+  extractsCache=data||[];
+  const {data:items}=await client.from('sc_extract_items').select('*').order('serial_no');
+  extractItemsCache=items||[];
+  if(render) renderExtracts();
+}
+
+function renderExtracts(){
+  const q=(val('extractSearch')||'').toLowerCase().trim();
+  let rows=extractsCache.filter(e=>!q || [e.extract_no,e.contractor_name,e.order_no].some(x=>String(x||'').toLowerCase().includes(q)));
+  extractsArea.innerHTML = `<div class="table-wrap"><table class="table">
+  <thead><tr><th>رقم المستخلص</th><th>التاريخ</th><th>المشروع</th><th>المقاول</th><th>رقم الأمر</th><th>مبالغ سابقة</th><th>مبالغ حالية</th><th>الإجمالي حتى تاريخه</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+  <tbody>${rows.map(e=>`<tr><td>${displayExtractSerial(e.extract_no)||''}</td><td>${e.extract_date||''}</td><td>${e.project_name||''}</td><td>${e.contractor_name||''}</td><td>${e.order_no||''}</td><td>${money(e.total_previous_amount)}</td><td>${money(e.total_current_amount)}</td><td>${money(e.total_to_date_amount)}</td><td>${statusBadge(e.status)}</td>
+  <td><button class="small" onclick="editExtract(${e.id})">فتح</button> ${isAdmin()?`<button class="small red" onclick="deleteExtract(${e.id})">حذف</button>`:''}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+async function openExtractModal(){
+  setVal('extractId','');
+
+  await loadOrders(false);
+  await loadExtracts(false);
+
+  // رقم المستخلص يتحدد بعد اختيار أمر التوريد، كمسلسل خاص بكل أمر
+  setVal('extractNo','');
+  setVal('extractDate',today());
+  setVal('extractWorkFrom',today());
+  setVal('extractWorkTo',today());
+  refreshOrderSelects();
+
+  const body=document.getElementById('extractItemsBody');
+  if(body) body.innerHTML='';
+
+  setVal('extractOrder','');
+  setVal('extractContractorName','');
+  setVal('extractProjectName','');
+  setVal('extractContractorCode','');
+  setVal('extractOrderNo','');
+  currentExtractOrderNoForDisplay = '';
+  forceExtractOrderNoDisplay('');
+
+  calcExtractTotals();
+  extractAttachmentsPending = [];
+  renderExtractAttachments();
+  const attachInput=document.getElementById('extractAttachmentsInput'); if(attachInput) attachInput.disabled = false;
+  setApprovalVisual(false,false);
+  setExtractReadOnly(false);
+  updateExtractHeader();
+  openModal('extractModal');
+}
+
+async function loadOrderToExtract(showAlert=false){
+  if(extractOrderLoadingNow) return;
+  extractOrderLoadingNow = true;
+
+  try{
+    const orderId = Number(val('extractOrder') || 0);
+    const body = document.getElementById('extractItemsBody');
+    if(body) body.innerHTML = '';
+
+    if(!orderId){
+      setVal('extractContractorName','');
+      setVal('extractProjectName','');
+      setVal('extractContractorCode','');
+      setVal('extractOrderNo','');
+      currentExtractOrderNoForDisplay = '';
+      forceExtractOrderNoDisplay('');
+      calcExtractTotals();
+      updateExtractHeader();
+      return;
+    }
+
+    let o = ordersCache.find(x => Number(x.id) === orderId);
+    if(!o){
+      const {data,error}=await client.from('sc_orders').select('*').eq('id',orderId).maybeSingle();
+      if(error || !data){
+        alert('لم يتم العثور على أمر التوريد');
+        console.error(error);
+        return;
+      }
+      o=data;
+    }
+
+    setVal('extractContractorName', o.contractor_name || '');
+    setVal('extractProjectName', o.project_name || '');
+    setVal('extractContractorCode', o.contractor_code || '');
+    setVal('extractOrderNo', o.order_no || '');
+    currentExtractOrderNoForDisplay = o.order_no || '';
+    forceExtractOrderNoDisplay(currentExtractOrderNoForDisplay);
+
+    if(!val('extractId')){
+      setVal('extractNo', String(getNextExtractSerialForOrder(orderId)));
+    }
+
+    setVal('extractDate', val('extractDate') || today());
+    setVal('extractWorkFrom', val('extractWorkFrom') || o.order_date || today());
+    setVal('extractWorkTo', val('extractWorkTo') || today());
+    updateExtractHeader();
+
+    let items = orderItemsCache.filter(i => Number(i.order_id) === orderId);
+
+    if(!items.length){
+      const {data,error}=await client.from('sc_order_items').select('*').eq('order_id',orderId).order('serial_no');
+      if(error){
+        alert('خطأ تحميل بنود أمر التوريد');
+        console.error(error);
+        return;
+      }
+      items=data || [];
+    }
+
+    const unique = [];
+    const seen = new Set();
+    items.forEach(item=>{
+      const key = item.id || `${item.description}|${item.unit}|${item.qty}|${item.unit_price}`;
+      if(!seen.has(key)){
+        seen.add(key);
+        unique.push(item);
+      }
+    });
+
+    if(!unique.length){
+      if(showAlert) alert('أمر التوريد لا يحتوي على بنود محفوظة. افتح أمر التوريد وتأكد من حفظ البنود.');
+      calcExtractTotals();
+      return;
+    }
+
+    if(body) body.innerHTML = '';
+
+    for(const item of unique){
+      const prev = await getPreviousForOrderItem(item.id);
+      addExtractItemRow({
+        order_item_id:item.id,
+        description:item.description,
+        unit:item.unit,
+        order_qty:item.qty,
+        unit_price:item.unit_price,
+        previous_qty:prev.qty,
+        previous_amount:(Number(prev.qty||0)*Number(item.unit_price||0)),
+        current_qty:0
+      }, false);
+    }
+
+    calcExtractTotals();
+    updateExtractHeader();
+    forceExtractOrderNoDisplay(o.order_no || '');
+  }finally{
+    extractOrderLoadingNow = false;
+  }
+}
+
+async function getPreviousForOrderItem(orderItemId){
+  const {data}=await client.from('sc_extract_items')
+    .select('current_qty,current_amount,extract_id')
+    .eq('order_item_id',orderItemId);
+  if(!data || !data.length) return {qty:0,amount:0};
+  const approvedIds = extractsCache.filter(e=>e.status==='approved').map(e=>e.id);
+  let qty=0, amount=0;
+  data.forEach(r=>{
+    if(approvedIds.includes(r.extract_id)){
+      qty += Number(r.current_qty||0);
+      amount += Number(r.current_amount||0);
+    }
+  });
+  return {qty,amount};
+}
+
+function addExtractItemRow(item={}, readonly=false){
+  const body=document.getElementById('extractItemsBody');
+  if(!body) return;
+  const idx=body.children.length+1;
+  const price=Number(item.unit_price||0);
+  const prevQty=Number(item.previous_qty||0);
+  const prevAmount=Number(item.previous_amount||0);
+  const curQty=Number(item.current_qty||0);
+  const tr=document.createElement('tr');
+  tr.dataset.orderItemId=item.order_item_id||'';
+  tr.innerHTML=`<td>${idx}</td>
+  <td class="work-desc">${item.description||''}</td>
+  <td>${money(item.order_qty)}</td>
+  <td>${item.unit||''}</td>
+  <td class="extPrevQty">${money(prevQty)}</td>
+  <td><input class="extCurrentQty" type="number" step="0.001" value="${curQty}" oninput="calcExtractTotals();" ${readonly?'readonly':''}></td>
+  <td class="extTotalQty">0</td>
+  <td class="extPrice">${price}</td>
+  <td class="extPrevAmount">${money(prevAmount)}</td>
+  <td class="extCurrentAmount">0</td>
+  <td class="extTotalAmount">0</td>
+  <td></td>`;
+  body.appendChild(tr);
+}
+
+function calcExtractTotals(){
+  let prevTotal=0,currentTotal=0,toDateTotal=0;
+  document.querySelectorAll('#extractItemsBody tr').forEach(tr=>{
+    const price=Number((tr.querySelector('.extPrice')?.textContent||'0').replaceAll(',',''));
+    const prevQty=Number((tr.querySelector('.extPrevQty')?.textContent||'0').replaceAll(',',''));
+    const currentQty=Number(tr.querySelector('.extCurrentQty')?.value||0);
+
+    // حسب المطلوب:
+    // السابق = الفئة × الكمية السابقة
+    // الحالي = الفئة × الكمية الحالية
+    // الإجمالي = السابق + الحالي
+    const prevAmount=prevQty*price;
+    const currentAmount=currentQty*price;
+    const totalQty=prevQty+currentQty;
+    const totalAmount=prevAmount+currentAmount;
+
+    const prevAmountEl=tr.querySelector('.extPrevAmount');
+    if(prevAmountEl) prevAmountEl.textContent=money(prevAmount);
+    tr.querySelector('.extCurrentAmount').textContent=money(currentAmount);
+    tr.querySelector('.extTotalQty').textContent=money(totalQty);
+    tr.querySelector('.extTotalAmount').textContent=money(totalAmount);
+
+    prevTotal += prevAmount;
+    currentTotal += currentAmount;
+    toDateTotal += totalAmount;
+  });
+  const p=document.getElementById('extractPrevTotal'); if(p) p.textContent=money(prevTotal);
+  const c=document.getElementById('extractCurrentTotal'); if(c) c.textContent=money(currentTotal);
+  const t=document.getElementById('extractToDateTotal'); if(t) t.textContent=money(toDateTotal);
+  const n=document.getElementById('extractNetValue'); if(n) n.textContent=money(currentTotal);
+  forceExtractOrderNoDisplay();
+  return {prevTotal,currentTotal,toDateTotal};
+}
+
+async function saveExtract(){
+  const order=ordersCache.find(o=>o.id===Number(val('extractOrder')));
+  if(!order){ alert('اختر أمر الإسناد'); return; }
+  const totals=calcExtractTotals();
+  const payload={
+    extract_no:buildStoredExtractNo(order.order_no, val('extractNo')), extract_date:val('extractDate'), work_from:val('extractWorkFrom')||val('extractDate'), work_to:val('extractWorkTo')||val('extractDate'), contractor_id:order.contractor_id, order_id:order.id,
+    contractor_code:order.contractor_code, contractor_name:order.contractor_name, project_name:order.project_name||'', order_no:order.order_no,
+    total_previous_amount:totals.prevTotal, total_current_amount:totals.currentTotal, total_to_date_amount:totals.toDateTotal,
+    attachments: extractAttachmentsPending,
+    updated_at:new Date().toISOString()
+  };
+  let result,error;
+  if(val('extractId')){
+    const existing=extractsCache.find(e=>e.id===Number(val('extractId')));
+    if(isExtractFinalApproved(existing) && !isAdmin()){ alert('المستخلص معتمد نهائياً ولا يمكن تعديله إلا من السوبر أدمن'); return; }
+    ({error}=await client.from('sc_extracts').update(payload).eq('id',Number(val('extractId'))));
+    result={id:Number(val('extractId'))};
+    await client.from('sc_extract_items').delete().eq('extract_id',result.id);
+  }else{
+    payload.created_by=currentUser.username;
+    ({data:result,error}=await client.from('sc_extracts').insert(payload).select().single());
+  }
+  if(error){ alert('خطأ حفظ المستخلص'); console.error(error); return; }
+  const items=[];
+  document.querySelectorAll('#extractItemsBody tr').forEach((tr,i)=>{
+    items.push({
+      extract_id:result.id, order_item_id:Number(tr.dataset.orderItemId||0), serial_no:i+1,
+      description:tr.children[1].textContent, unit:tr.children[3].textContent,
+      order_qty:Number((tr.children[2].textContent||'0').replaceAll(',','')),
+      unit_price:Number(tr.querySelector('.extPrice').textContent||0),
+      previous_qty:Number((tr.querySelector('.extPrevQty').textContent||'0').replaceAll(',','')),
+      previous_amount:Number((tr.querySelector('.extPrevAmount').textContent||'0').replaceAll(',','')),
+      current_qty:Number(tr.querySelector('.extCurrentQty').value||0)
+    });
+  });
+  if(items.length) await client.from('sc_extract_items').insert(items);
+  alert('تم حفظ المستخلص');
+  setVal('extractId',result.id);
+  await loadExtracts(); await loadDashboard();
+}
+
+async function editExtract(id){
+  await loadExtracts(false); await loadOrders(false);
+  const e=extractsCache.find(x=>x.id===id); if(!e) return;
+  setVal('extractId',e.id);
+  setVal('extractNo',displayExtractSerial(e.extract_no));
+  setVal('extractDate',e.extract_date);
+  setVal('extractWorkFrom',e.work_from || e.extract_date);
+  setVal('extractWorkTo',e.work_to || e.extract_date);
+  setVal('extractOrder',e.order_id);
+  setVal('extractContractorName',e.contractor_name);
+  setVal('extractProjectName',e.project_name||'');
+  setVal('extractContractorCode',e.contractor_code);
+  setVal('extractOrderNo',e.order_no);
+  currentExtractOrderNoForDisplay = e.order_no || '';
+  forceExtractOrderNoDisplay(currentExtractOrderNoForDisplay);
+  const body=document.getElementById('extractItemsBody');
+  if(body) body.innerHTML='';
+  const readonly = isExtractFinalApproved(e) && !isAdmin();
+  extractItemsCache.filter(i=>i.extract_id===id).forEach(i=>addExtractItemRow(i,readonly));
+  calcExtractTotals();
+  extractAttachmentsPending = Array.isArray(e.attachments) ? e.attachments : [];
+  renderExtractAttachments();
+  updateExtractHeader();
+  setApprovalVisual(e.status==='site_approved' || isExtractFinalApproved(e), isExtractFinalApproved(e));
+  setExtractReadOnly(readonly);
+  const attachInput=document.getElementById('extractAttachmentsInput'); if(attachInput) attachInput.disabled = readonly;
+  openModal('extractModal');
+}
+
+async function approveExtractSite(){
+  if(!val('extractId')) await saveExtract();
+  const id=Number(val('extractId')); if(!id) return;
+  const pass=val('siteApprovalPassword');
+  if(!pass){ alert('أدخل كلمة مرور اعتماد مهندس الموقع'); return; }
+  // يقبل باسورد المستخدم الحالي أو باسورد السوبر أدمن
+  if(pass !== currentUser.password && pass !== '689523741'){
+    alert('كلمة المرور غير صحيحة');
+    return;
+  }
+  const {error}=await client.from('sc_extracts').update({
+    status:'site_approved',
+    site_approved_by:currentUser.username,
+    site_approved_at:new Date().toISOString()
+  }).eq('id',id);
+  if(error){ alert('خطأ اعتماد مهندس الموقع. شغّل SQL الخاص بأعمدة الاعتماد.'); return; }
+  setApprovalVisual(true,false);
+  alert('تم اعتماد مهندس الموقع');
+  await loadExtracts(false);
+}
+async function approveExtractFinal(){
+  if(!isAdmin()){ alert('الاعتماد النهائي للسوبر أدمن فقط'); return; }
+  if(!val('extractId')) await saveExtract();
+  const id=Number(val('extractId')); if(!id) return;
+  const pass=val('finalApprovalPassword');
+  if(pass !== '689523741'){ alert('كلمة مرور السوبر أدمن غير صحيحة'); return; }
+  const {error}=await client.from('sc_extracts').update({
+    status:'approved',
+    approved_by:currentUser.username,
+    approved_at:new Date().toISOString()
+  }).eq('id',id);
+  if(error){ alert('خطأ الاعتماد النهائي'); return; }
+  setApprovalVisual(true,true);
+  setExtractReadOnly(true);
+  alert('تم الاعتماد النهائي للمستخلص');
+  await loadExtracts(false);
+}
+async function approveExtract(){
+  return approveExtractFinal();
+}
+
+async function deleteExtract(id){
+  if(!isAdmin()){ alert('حذف المستخلص للسوبر أدمن فقط'); return; }
+  const ex=extractsCache.find(e=>e.id===id);
+  if(isExtractFinalApproved(ex)){
+    const pass=prompt('مستخلص معتمد نهائياً. أدخل كلمة مرور السوبر أدمن للحذف');
+    if(pass !== '689523741'){ alert('كلمة المرور غير صحيحة'); return; }
+  }
+  if(!confirm('هل تريد حذف المستخلص نهائياً؟')) return;
+  const {error}=await client.from('sc_extracts').delete().eq('id',id);
+  if(error){ alert('خطأ الحذف'); return; }
+  await loadExtracts(); await loadDashboard();
+}
+function deleteCurrentExtract(){
+  const id=Number(val('extractId')||0);
+  if(!id){ alert('لا يوجد مستخلص محفوظ للحذف'); return; }
+  deleteExtract(id);
+}
+
+
+function printStatement(){
+  const area = document.getElementById('statementArea');
+  if(!area || !area.innerHTML.trim()){
+    alert('لا توجد بيانات في كشف الحساب للطباعة. اختر المقاول واضغط عرض كشف الحساب أولاً.');
+    return;
+  }
+
+  const w = window.open('', '_blank', 'width=1100,height=800');
+  if(!w){
+    alert('المتصفح منع فتح نافذة الطباعة. اسمح بالـ Popups ثم حاول مرة أخرى.');
+    return;
+  }
+
+  w.document.open();
+  w.document.write(`
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <title>طباعة كشف حساب</title>
+      <style>
+        *{box-sizing:border-box}
+        body{font-family:Arial,Tahoma,sans-serif;margin:0;padding:12mm;color:#111;background:white}
+        .a4{width:100%;max-width:none;border:none;border-radius:0;box-shadow:none;margin:0;padding:0}
+        .doc-title{text-align:center;background:#07306f;color:white;border-radius:6px;padding:10px;font-weight:bold;font-size:20px;margin-bottom:12px}
+        h3{margin:8px 0;color:#0f172a}
+        .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+        .box{border:1px solid #cbd5e1;border-radius:10px;padding:12px;text-align:center}
+        .box h3{font-size:13px;margin:0 0 8px}
+        .box h2{font-size:20px;margin:0;color:#07306f}
+        table{width:100%;border-collapse:collapse;font-size:12px}
+        th,td{border:1px solid #111;padding:6px;text-align:center;vertical-align:middle}
+        th{background:#f1f5f9}
+        @page{size:A4 portrait;margin:10mm}
+      </style>
+    </head>
+    <body>${area.innerHTML}</body>
+    </html>
+  `);
+  w.document.close();
+  setTimeout(()=>{ w.focus(); w.print(); }, 350);
+}
+
+function printExtract(){
+  document.body.classList.add('printing-extract');
+  setTimeout(()=>{
+    window.print();
+    setTimeout(()=>document.body.classList.remove('printing-extract'), 500);
+  }, 100);
+}
+
+/* ================= Statement ================= */
+
+async function loadStatement(){
+  refreshStatementContractors();
+  const contractorId=Number(val('statementContractor')||0);
+  if(!contractorId){ statementArea.innerHTML='<p>اختر المقاول لعرض كشف الحساب</p>'; return; }
+  const c=contractorsCache.find(x=>x.id===contractorId);
+  const {data,error}=await client.from('sc_contractor_statement').select('*').eq('contractor_id',contractorId).order('transaction_date',{ascending:true});
+  if(error){ statementArea.innerHTML='خطأ تحميل كشف الحساب. راجع View أو أعمدة settlement_lines.'; return; }
+  let balance=0;
+  const rows=(data||[]).map(r=>{
+    balance += Number(r.credit_amount||0) - Number(r.debit_amount||0);
+    return `<tr><td>${r.transaction_date||''}</td><td>${r.transaction_type||''}</td><td>${r.document_no||''}</td><td>${r.order_no||''}</td><td>${money(r.credit_amount)}</td><td>${money(r.debit_amount)}</td><td>${money(balance)}</td></tr>`;
+  }).join('');
+  const totalCredit=(data||[]).reduce((s,r)=>s+Number(r.credit_amount||0),0);
+  const totalDebit=(data||[]).reduce((s,r)=>s+Number(r.debit_amount||0),0);
+  statementArea.innerHTML=`<div class="a4">
+  <div class="doc-title">كشف حساب مقاول / مورد</div>
+  <h3>المقاول: ${c?.contractor_name||''}</h3>
+  <h3>الكود: ${c?.contractor_code||''}</h3>
+  <div class="summary">
+    <div class="box"><h3>إجمالي المستخلصات - دائن</h3><h2>${money(totalCredit)}</h2></div>
+    <div class="box"><h3>إجمالي الدفعات - مدين</h3><h2>${money(totalDebit)}</h2></div>
+    <div class="box"><h3>الرصيد</h3><h2>${money(totalCredit-totalDebit)}</h2></div>
+  </div>
+  <br>
+  <table class="table"><thead><tr><th>التاريخ</th><th>النوع</th><th>رقم المستند</th><th>رقم الأمر</th><th>دائن</th><th>مدين</th><th>الرصيد</th></tr></thead><tbody>${rows}</tbody></table>
+  </div>`;
+}
+
+/* ================= Users ================= */
+
+async function loadUsers(){
+  const {data,error}=await client.from('sc_users').select('*').order('id',{ascending:false});
+  if(error){ usersArea.innerHTML='خطأ تحميل المستخدمين'; return; }
+  usersArea.innerHTML=`<div class="table-wrap"><table class="table">
+  <thead><tr><th>Username</th><th>Role</th><th>Status</th><th>تاريخ التسجيل</th><th>إجراءات</th></tr></thead>
+  <tbody>${(data||[]).map(u=>`<tr><td>${u.username}</td><td>${u.role}</td><td>${statusBadge(u.status)}</td><td>${u.created_at||''}</td>
+  <td>${u.username==='admin'?'لا يمكن حذف الأدمن':`
+  <button class="small green" onclick="approveUser(${u.id})">قبول</button>
+  <button class="small red" onclick="deleteUser(${u.id})">حذف</button>`}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+async function approveUser(id){
+  await client.from('sc_users').update({status:'approved'}).eq('id',id);
+  loadUsers();
+}
+async function deleteUser(id){
+  if(!confirm('حذف المستخدم؟')) return;
+  await client.from('sc_users').delete().eq('id',id);
+  loadUsers();
+}
+
+/* ================= Selects ================= */
+
+function refreshContractorSelects(){
+  const opts='<option value="">اختر المقاول / المورد</option>'+contractorsCache.map(c=>`<option value="${c.id}">${c.contractor_code} - ${c.contractor_name}</option>`).join('');
+  if(document.getElementById('orderContractor')) orderContractor.innerHTML=opts;
+  refreshStatementContractors();
+}
+
+function refreshOrderSelects(){
+  const allowed = ordersCache.filter(o => isAdmin() || o.status === 'approved');
+  const opts = '<option value="">اختر رقم أمر التوريد / الإسناد</option>' +
+    allowed.map(o => `<option value="${o.id}">${o.order_no || ''} - ${o.project_name || ''} - ${o.contractor_name || ''}</option>`).join('');
+  const el = document.getElementById('extractOrder');
+  if(el) el.innerHTML = opts;
+}
+
+function refreshStatementContractors(){
+  const current=val('statementContractor');
+  const opts='<option value="">اختر المقاول</option>'+contractorsCache.map(c=>`<option value="${c.id}">${c.contractor_code} - ${c.contractor_name}</option>`).join('');
+  if(document.getElementById('statementContractor')){ statementContractor.innerHTML=opts; if(current) statementContractor.value=current; }
+}
+
+
+function updateSystemClock(){
+  const el=document.getElementById('systemClock');
+  if(!el) return;
+  const d=new Date();
+  el.textContent = d.toLocaleDateString('en-GB') + ' ' + d.toLocaleTimeString('en-US') + ' : تاريخ ووقت النظام';
+}
+setInterval(updateSystemClock,1000);
+updateSystemClock();
+
+/* ================= Start ================= */
+
+window.addEventListener('load', async ()=>{
+  const btn=document.getElementById('openOrderBtn');
+  if(btn){
+    btn.addEventListener('click', function(ev){
+      ev.preventDefault();
+      openOrderModal();
+    });
+  }
+  ['extractDate','extractWorkFrom','extractWorkTo'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('change', updateExtractHeader);
+  });
+  const saved=localStorage.getItem('sc_current_user');
+  if(saved){
+    currentUser=JSON.parse(saved);
+    startApp();
+  }
+});
+</script>
+
+</body>
+</html>
